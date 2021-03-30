@@ -12,5 +12,5 @@ Light::Light(Point3 origin, Pixel colors)
 Point_Light::Point_Light(Point3 origin, float color_intensity)
     : Light{origin, color_intensity} {}
 
-Point_Light::Point_Light(Point3 orign, Pixel colors)
-    : Light{orign, colors} {}
+Point_Light::Point_Light(Point3 origin, Pixel colors)
+    : Light{origin, colors} {}

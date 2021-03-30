@@ -6,7 +6,7 @@ Point3::Point3()
   , z(0)
 {}
 
-Point3::Point3(float x, float y, float z)
+Point3::Point3(double x, double y, double z)
     : x(x),
       y(y),
       z(z)

@@ -7,36 +7,36 @@
 
 class Blob {
 public:
-    Blob(Point3 center, float e, float d, std::vector<Point3> blobs_origin, float threshold
+    Blob(Point3 center, double e, double d, std::vector<Point3> blobs_origin, double threshold
             , std::shared_ptr<Texture_Material> texture_material);
 
-    float potential(const Point3& point);
+    double potential(const Point3& point);
 
     bool is_in_blob(const Point3& point);
 
-    bool satisfy_threshold(float value);
+    bool satisfy_threshold(double value);
 
-    std::array<bool, 8> are_in_blob(const std::array<float, 8> potentials);
+    std::array<bool, 8> are_in_blob(const std::array<double, 8>& potentials);
 
-    int give_index(const std::array<float, 8> potentials_value);
+    int give_index(const std::array<double, 8>& potentials_value);
 
     Vector3 normal_at_point(const Point3& point);
 
-    void add_triangles(Scene& scene, int index, const Point3& cube, const std::array<Point3, 12> edges_position);
+    void add_triangles(Scene& scene, int index, const Point3& cube, const std::array<Point3, 12>& edges_position);
 
-    Point3 interpolated_value(const Point3& A, const Point3& B, float A_potential, float B_potential);
+    Point3 interpolated_value(const Point3& A, const Point3& B, double A_potential, double B_potential) const;
 
-    std::array<float, 8> give_potentials(const std::array<Point3, 8> boundaries);
+    std::array<double, 8> give_potentials(const std::array<Point3, 8>& boundaries);
 
-    std::array<Point3, 12> edges_position(const std::array<Point3, 8> &boundaries, const std::array<float, 8> &potentials);
+    std::array<Point3, 12> edges_position(const std::array<Point3, 8> &boundaries, const std::array<double, 8> &potentials) const;
 
     void marching_cubes(Scene& scene);
 
     Point3 center; //center of big cube
-    float e;
-    float d;
+    double e;
+    double d;
     std::vector<Point3> blobs_origin;
-    float threshold;
+    double threshold;
     std::shared_ptr<Texture_Material> texture_material;
     bool smooth_triangle = true;
 

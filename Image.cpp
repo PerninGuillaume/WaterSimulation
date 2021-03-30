@@ -1,12 +1,13 @@
 #include "Image.hh"
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 Image::Image(int width, int height)
 : width(width)
 , height(height) {}
 
-  Image::Image(std::string input_filename) {
+  Image::Image(const std::string& input_filename) {
   std::ifstream file;
   file.open(input_filename);
   if (!file.is_open()) {
@@ -27,18 +28,25 @@ Image::Image(int width, int height)
   int color_value_green;
   int color_value_blue;
   while (file >> color_value_red && file >> color_value_green && file >> color_value_blue) {
-    pixels.push_back(Pixel(color_value_red, color_value_green, color_value_blue));
+    pixels.emplace_back(color_value_red, color_value_green, color_value_blue);
   }
 }
 
-void Image::save_as_ppm(std::string filename) {
+unsigned char Image::compress_value(double value) {
+  return (unsigned char)(std::max(0.0, std::min(255.0, std::pow(value, 1/gamma))));
+}
+
+void Image::save_as_ppm(const std::string& filename) {
     std::ofstream file;
     file.open(filename);
-    file << "P3\n";
+    file << "P6\n";
     file << width << " " << height << '\n';
     file << max_color_value << '\n';
     for (const auto& pixel : pixels) {
-        file << (int)pixel.red << ' ' << (int)pixel.green << ' ' << (int)pixel.blue << '\n';
+      unsigned char r = compress_value(pixel.x);
+      unsigned char g = compress_value(pixel.y);
+      unsigned char b = compress_value(pixel.z);
+      file << r << g << b;
     }
     file.close();
 }

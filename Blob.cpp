@@ -3,7 +3,7 @@
 #include <array>
 #include <iostream>
 
-Blob::Blob(Point3 center, float e, float d, std::vector<Point3> blobs_origin, float threshold
+Blob::Blob(Point3 center, double e, double d, std::vector<Point3> blobs_origin, double threshold
 , std::shared_ptr<Texture_Material> texture_material)
   : center(center)
   , e(e)
@@ -12,8 +12,8 @@ Blob::Blob(Point3 center, float e, float d, std::vector<Point3> blobs_origin, fl
   , threshold(threshold)
   , texture_material(texture_material) {}
 
-float Blob::potential(const Point3& point) {
-  float value = 0;
+double Blob::potential(const Point3& point) {
+  double value = 0;
   for (const auto& blob : blobs_origin) {
     Vector3 distance(blob, point);
     value += 1.0 / (distance.x * distance.x + distance.y * distance.y + distance.z * distance.z);
@@ -21,7 +21,7 @@ float Blob::potential(const Point3& point) {
   return value;
 }
 
-bool Blob::satisfy_threshold(float value) {
+bool Blob::satisfy_threshold(double value) {
   return value >= threshold;
 }
 
@@ -29,7 +29,7 @@ bool Blob::is_in_blob(const Point3& point) {
   return this->potential(point) >= threshold;
 }
 
-std::array<bool, 8> Blob::are_in_blob(const std::array<float, 8> potentials) {
+std::array<bool, 8> Blob::are_in_blob(const std::array<double, 8>& potentials) {
   std::array<bool, 8> in_blob;
   for (int index = 0; index < 8; ++index) {
     in_blob[index] = satisfy_threshold(potentials[index]);
@@ -37,15 +37,15 @@ std::array<bool, 8> Blob::are_in_blob(const std::array<float, 8> potentials) {
   return in_blob;
 }
 
-std::array<float, 8> Blob::give_potentials(const std::array<Point3, 8> boundaries) {
-  std::array<float, 8> potentials = {};
+std::array<double, 8> Blob::give_potentials(const std::array<Point3, 8>& boundaries) {
+  std::array<double, 8> potentials = {};
   for (int index = 0; index < 8; ++index) {
     potentials[index] = potential(boundaries[index]);
   }
   return potentials;
 }
 
-int Blob::give_index(const std::array<float, 8> potentials_value) {
+int Blob::give_index(const std::array<double, 8>& potentials_value) {
   auto potentials = are_in_blob(potentials_value);
   int index = 0;
 
@@ -69,7 +69,7 @@ Vector3 Blob::normal_at_point(const Point3& point) {
   return normal.normalize();
 }
 
-void Blob::add_triangles(Scene& scene, int index, const Point3& cube, const std::array<Point3, 12> edges_position) {
+void Blob::add_triangles(Scene& scene, int index, const Point3& cube, const std::array<Point3, 12>& edges_position) {
   //std::array<Point3, 12> edges_position = {
   //    cube + Point3(d / 2, 0, 0), cube + Point3(d, d / 2, 0), cube + Point3(d / 2 , d, 0), cube + Point3(0, d / 2, 0)
   //  , cube + Point3(d / 2, 0, -d), cube + Point3(d, d / 2, -d), cube + Point3(d / 2 , d, -d), cube + Point3(0, d / 2, -d)
@@ -89,20 +89,20 @@ void Blob::add_triangles(Scene& scene, int index, const Point3& cube, const std:
   }
 }
 
-Point3 Blob::interpolated_value(const Point3& A, const Point3& B, float A_potential, float B_potential) {
+Point3 Blob::interpolated_value(const Point3& A, const Point3& B, double A_potential, double B_potential) const {
   if (A_potential < B_potential) {
-    float coeff = (this->threshold - A_potential) / (B_potential - A_potential);
+    double coeff = (this->threshold - A_potential) / (B_potential - A_potential);
     Point3 P = Vector3(A, B) * coeff + A;
     return P;
   }
   else {
-    float coeff = (this->threshold - B_potential) / (A_potential - B_potential);
+    double coeff = (this->threshold - B_potential) / (A_potential - B_potential);
     Point3 P = Vector3(B, A) * coeff + B;
     return P;
   }
 }
 
-std::array<Point3, 12> Blob::edges_position(const std::array<Point3, 8>& boundaries, const std::array<float, 8>& potentials) {
+std::array<Point3, 12> Blob::edges_position(const std::array<Point3, 8>& boundaries, const std::array<double, 8>& potentials) const {
   //The vertices are grouped by two
   std::array<int, 24> vertices = {0,1, 1,2, 2,3, 3,0, 4,5, 5,6, 6,7, 7,4, 0,4, 1,5, 2,6, 3,7};
   std::array<Point3, 12> edges = {};
@@ -127,9 +127,6 @@ void Blob::marching_cubes(Scene& scene) {
         auto potentials = give_potentials(boundaries);
         auto edges = edges_position(boundaries, potentials);
         int index = give_index(give_potentials(boundaries));
-        if (index != 0 && index != 255) {
-          std::cout << current << '\n';
-        }
         add_triangles(scene, index, current, edges);
 
         current += Point3(0, 0, -d);

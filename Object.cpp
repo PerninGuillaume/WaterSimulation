@@ -5,7 +5,7 @@ Object::Object(std::shared_ptr<Texture_Material> texture_material)
   : texture_material(texture_material)
  {}
 
-Sphere::Sphere(std::shared_ptr<Texture_Material> texture_material, Point3 origin, float radius)
+Sphere::Sphere(std::shared_ptr<Texture_Material> texture_material, Point3 origin, double radius)
     : Object{texture_material}
     , origin(origin)
     , radius(radius)
@@ -39,23 +39,23 @@ SmoothTriangle::SmoothTriangle(std::shared_ptr<Texture_Material> texture_materia
 {}
 //-----------------------------------------------SPHERE------------------------------------------------------------//
 
-std::optional<float> Sphere::is_intersecting(const Rayon& ray)
+std::optional<double> Sphere::is_intersecting(const Rayon& ray)
 {
     // Formulas from wikipedia, verified on paper
-    float a = std::pow(ray.direction.norm(), 2.0);
+    double a = std::pow(ray.direction.norm(), 2.0);
     Vector3 sphere_to_point(this->origin, ray.origin);
-    float b = 2.0 * (ray.direction.scalar_product(sphere_to_point));
-    float c = std::pow(sphere_to_point.norm(), 2.0) - std::pow(this->radius, 2.0);
-    float delta = std::pow(b, 2.0) - 4.0 * a * c;
+    double b = 2.0 * (ray.direction.scalar_product(sphere_to_point));
+    double c = std::pow(sphere_to_point.norm(), 2.0) - std::pow(this->radius, 2.0);
+    double delta = std::pow(b, 2.0) - 4.0 * a * c;
     if (delta < 0.0) {
-        return std::optional<float>();
+        return std::optional<double>();
     } else if (delta == 0.0) {
-        return std::optional<float>(-b / (2.0 * a));
+        return std::optional<double>(-b / (2.0 * a));
     }
-    float t0 = (-b - std::sqrt(delta)) / (2.0 * a);
-    float t1 = (-b + std::sqrt(delta)) / (2.0 * a);
+    double t0 = (-b - std::sqrt(delta)) / (2.0 * a);
+    double t1 = (-b + std::sqrt(delta)) / (2.0 * a);
     if (t0 < 0 && t1 < 0) {
-      return std::optional<float>();
+      return std::optional<double>();
     } else if (t0 < 0) {
       return t1;
     } else if (t1 < 0) {
@@ -75,10 +75,10 @@ Caracteristics Sphere::texture_at_point(const Point3&) {
 
 //-----------------------------------------------PLANE--------------------------------------------------------------//
 
-std::optional<float> Plane::is_intersecting(const Rayon& ray) {
+std::optional<double> Plane::is_intersecting(const Rayon& ray) {
     auto scalar = ray.direction.scalar_product(normal);
     if (scalar == 0.0) {
-        return std::optional<float>(); //The line could be inside the plane but I don't take into account this case
+        return std::optional<double>(); //The line could be inside the plane but I don't take into account this case
     }
     auto tmp = Vector3(ray.origin, this->point).scalar_product(this->normal);
     return tmp / scalar;
@@ -96,36 +96,36 @@ Caracteristics Plane::texture_at_point(const Point3&) {
 }
 
 //-----------------------------------------------TRIANGLE--------------------------------------------------------------//
-std::optional<float> Triangle::is_intersecting(const Rayon &ray) {
+std::optional<double> Triangle::is_intersecting(const Rayon &ray) {
   Vector3 D = ray.direction;
   Vector3 P = D.vector_product(AC);
-  float determinant = P.scalar_product(AB);
+  double determinant = P.scalar_product(AB);
   if (std::fabs(determinant) < epsilon) // ray too much parallel to triangle
-    return std::optional<float>();
+    return std::optional<double>();
 
-  float invDeterminant = 1.0 / determinant;
+  double invDeterminant = 1.0 / determinant;
   Vector3 AO(A, ray.origin);
-  float u = invDeterminant * AO.scalar_product(P);
+  double u = invDeterminant * AO.scalar_product(P);
   if (u < 0 || u > 1) // outside of triangle
-    return std::optional<float>();
+    return std::optional<double>();
 
   Vector3 Q = AO.vector_product(AB);
-  float v = invDeterminant * D.scalar_product(Q);
-  float w = 1.0 - u - v;
+  double v = invDeterminant * D.scalar_product(Q);
+  double w = 1.0 - u - v;
   if (v < 0 || u + v > 1) // outside of triangle
-    return std::optional<float>();
+    return std::optional<double>();
 
-  float t = invDeterminant * AC.scalar_product(Q);
+  double t = invDeterminant * AC.scalar_product(Q);
   return t;
 }
 /*
 //ScratchPixel formulas for edges
-std::optional<float> Triangle::is_intersecting(const Rayon& ray) {
+std::optional<double> Triangle::is_intersecting(const Rayon& ray) {
   auto ray_dir_dot_product_normal = ray.direction.scalar_product(normal);
   if (std::fabs(ray_dir_dot_product_normal) < epsilon) {
-    return std::optional<float>();
+    return std::optional<double>();
   }
-  float t = (normal.scalar_product(Vector3(ray.origin, this->A))) / ray_dir_dot_product_normal;
+  double t = (normal.scalar_product(Vector3(ray.origin, this->A))) / ray_dir_dot_product_normal;
 
   Point3 P = ray.origin + t * ray.direction;
 
@@ -137,7 +137,7 @@ std::optional<float> Triangle::is_intersecting(const Rayon& ray) {
   Vector3 CP(C, P);
   if (normal.scalar_product(AB.vector_product(AP)) < 0 || normal.scalar_product(BC.vector_product(BP)) < 0
     || normal.scalar_product(CA.vector_product(CP)) < 0) {
-    return std::optional<float>();
+    return std::optional<double>();
   }
 
   return t;
@@ -168,28 +168,28 @@ std::ostream& operator<<(std::ostream& ost, const Triangle& triangle) {
 // u = ((D * AC) . AO) / determinant or (P. AO) / determinant
 // v = ((AO * AB) . D) / determinant or (Q . D) / determinant
 // t = ((AO * AB) . AC) / determinant or (Q. AC) / determinant
-std::optional<float> SmoothTriangle::is_intersecting(const Rayon &ray) {
+std::optional<double> SmoothTriangle::is_intersecting(const Rayon &ray) {
   Vector3 D = ray.direction;
   Vector3 AC = Vector3(A, C);
   Vector3 AB = Vector3(A, B);
   Vector3 P = D.vector_product(AC);
-  float determinant = P.scalar_product(AB);
+  double determinant = P.scalar_product(AB);
   if (std::fabs(determinant) < epsilon) // ray too much parallel to triangle
-    return std::optional<float>();
+    return std::optional<double>();
 
-  float invDeterminant = 1.0 / determinant;
+  double invDeterminant = 1.0 / determinant;
   Vector3 AO(A, ray.origin);
   u = invDeterminant * AO.scalar_product(P);
   if (u < 0 || u > 1) // outside of triangle
-    return std::optional<float>();
+    return std::optional<double>();
 
   Vector3 Q = AO.vector_product(AB);
   v = invDeterminant * D.scalar_product(Q);
   w = 1.0 - u - v;
   if (v < 0 || u + v > 1) // outside of triangle
-    return std::optional<float>();
+    return std::optional<double>();
 
-  float t = invDeterminant * AC.scalar_product(Q);
+  double t = invDeterminant * AC.scalar_product(Q);
   return t;
 }
 

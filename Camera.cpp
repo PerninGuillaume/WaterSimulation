@@ -1,7 +1,5 @@
 #include "Camera.hh"
 #include <cmath>
-#include <iostream>
-#include <math.h>
 
 Camera::Camera(Point3 center, Point3 spotted_point, Vector3 up, float alpha, float beta, float zmin)
     : center(center)
