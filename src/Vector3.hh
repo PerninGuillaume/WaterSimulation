@@ -1,7 +1,9 @@
 #pragma once
 #include <optional>
-#include "Point3.hh"
 
+class Vector3;
+
+using Point3 = Vector3;
 class Vector3
 {
  public:
@@ -19,12 +21,10 @@ class Vector3
   Vector3& operator*=(const Vector3 &v);
 
   Vector3 operator+(const Vector3 &v) const;
-  Point3 operator+(const Point3 &p) const;
   Vector3& operator+=(const Vector3& v);
 
   Vector3 operator-(const Vector3 &v) const;
   Vector3 operator-() const;
-  Point3 operator-(const Point3 &p) const;
 
   Vector3 operator/(double t);
   Vector3& operator/=(double t);
@@ -40,8 +40,6 @@ using Pixel = Vector3;
 
 std::ostream& operator<<(std::ostream &out, const Vector3& v);
 Vector3 operator*(const double &mul, const Vector3 &v);
-Point3 operator+(const Point3 &p, const Vector3 &v);
-Point3 operator-(const Point3 &p, const Vector3 &v);
 
 std::optional<Vector3> refraction_vector(const Vector3& incident, Vector3 normal, double index_refraction);
 Vector3 reflection_vector(const Vector3& incident, const Vector3& normal);

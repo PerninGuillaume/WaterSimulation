@@ -24,6 +24,20 @@ Texture_Material::Texture_Material(Caracteristics caracteristics)
 Uniform_Texture::Uniform_Texture(Caracteristics caracteristics)
     : Texture_Material{std::move(caracteristics)} {}
 
+Procedural_Texture::Procedural_Texture(Caracteristics caracteristics)
+    : Texture_Material(std::move(caracteristics)) {}
+
+Image_Texture::Image_Texture(Caracteristics caracteristics)
+    : Texture_Material(std::move(caracteristics)) {}
+
 Caracteristics Uniform_Texture::caracteristics_point(const Point3&) {
+  return caracteristics;
+}
+
+Caracteristics Procedural_Texture::caracteristics_point(const Point3 &point) {
+  return caracteristics;
+}
+
+Caracteristics Image_Texture::caracteristics_point(const Point3 &point) {
   return caracteristics;
 }

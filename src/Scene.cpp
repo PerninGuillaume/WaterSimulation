@@ -51,7 +51,7 @@ bool Scene::is_hidden(const Rayon& ray, double max_t) {
   std::shared_ptr<Object> intersecting_object;
   for (const auto& object : this->objects) {
     if (object->texture_material->caracteristics.index_refraction.has_value()) {
-      continue; //We can reach the light eventhough we intersect with a transparant object
+      continue; //We can reach the light eventhough we intersect with a transparent object
     }
     std::optional<double> t = object->is_intersecting(ray);
     if (t) {
@@ -123,6 +123,7 @@ double Scene::fresnel(const Vector3& incident, const Vector3& normal, double ind
 
 }
 
+//TODO unify the method for shadow acneing between find_intersection and is_hidden
 PointIntersection Scene::find_intersection(Rayon ray) {
   // for reflection and refraction instead of discarding small t, translate the origin of the ray along the ray normal
   ray.origin = ray.origin + ray.direction * epsilon;
@@ -174,9 +175,9 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
     double kr = this->fresnel(incident_vector, normal, caracteristics.index_refraction.value());
     Pixel refrac(0,0,0);
     if (kr < 1.0) {
-      auto refraction = refraction_vector(incident_vector, normal, caracteristics.index_refraction.value());
+      auto refraction_vec = refraction_vector(incident_vector, normal, caracteristics.index_refraction.value());
       //We should not be in the case of TIR because kr < 1.0
-      refrac = this->raycast(Rayon(refraction.value(), intersection_point), bounces - 1);
+      refrac = this->raycast(Rayon(refraction_vec.value(), intersection_point), bounces - 1);
     }
     Pixel reflex = caracteristics.ks * this->raycast(Rayon(reflected_vector, intersection_point), bounces - 1);
     result += reflex * kr + refrac * (1.0 - kr);

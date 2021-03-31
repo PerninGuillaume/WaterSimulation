@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <optional>
-#include "Point3.hh"
 #include "Rayon.hh"
 #include "Vector3.hh"
 #include "Texture_Material.hh"
@@ -86,6 +85,9 @@ public:
   double u;
   double v;
   double w;
+  Point3 A_text_coord; //TODO Actually it is a Point2
+  Point3 B_text_coord;
+  Point3 C_text_coord;
 };
 
 std::ostream& operator<<(std::ostream& ost, const Triangle& triangle);

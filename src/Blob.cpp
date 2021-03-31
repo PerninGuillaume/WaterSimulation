@@ -1,7 +1,5 @@
 #include "Blob.hh"
-#include "Point3.hh"
 #include <array>
-#include <iostream>
 
 Blob::Blob(Point3 center, double e, double d, std::vector<Point3> blobs_origin, double threshold
 , std::shared_ptr<Texture_Material> texture_material)

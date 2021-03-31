@@ -1,5 +1,4 @@
 #pragma once
-#include "Point3.hh"
 #include "Vector3.hh"
 #include "Scene.hh"
 #include <vector>

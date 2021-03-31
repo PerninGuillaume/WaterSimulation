@@ -111,7 +111,7 @@ std::optional<double> Triangle::is_intersecting(const Rayon &ray) {
 
   Vector3 Q = AO.vector_product(AB);
   double v = invDeterminant * D.scalar_product(Q);
-  double w = 1.0 - u - v;
+  //double w = 1.0 - u - v;
   if (v < 0 || u + v > 1) // outside of triangle
     return std::optional<double>();
 
@@ -156,8 +156,9 @@ Caracteristics Triangle::texture_at_point(const Point3&) {
 }
 
 std::ostream& operator<<(std::ostream& ost, const Triangle& triangle) {
-  ost << "{" << triangle.A << ", " << triangle.B << ", " << triangle.C << "}";
+  //ost << "{" << triangle.A << ", " << triangle.B << ", " << triangle.C << "}";
   return ost;
+  //TODO why doesn't it work
 }
 
 //-----------------------------------------------SMOOTHTRIANGLE-------------------------------------------------------//
@@ -193,6 +194,7 @@ std::optional<double> SmoothTriangle::is_intersecting(const Rayon &ray) {
   return t;
 }
 
+//This function should be called only after is_intersecting has been called in order for u,v and w to be initialized
 Vector3 SmoothTriangle::normal_at_point(const Point3&, const Rayon& ray) {
   Vector3 interpolatedVector = u * normA + v * normB + w * normC;
   if (ray.direction.scalar_product(interpolatedVector) > 0) {
@@ -201,11 +203,13 @@ Vector3 SmoothTriangle::normal_at_point(const Point3&, const Rayon& ray) {
   return interpolatedVector;
 }
 
-Caracteristics SmoothTriangle::texture_at_point(const Point3&) {
-  return texture_material->caracteristics;
+Caracteristics SmoothTriangle::texture_at_point(const Point3& point) {
+  //A_text_coord * w + B_text_coord * u + C_text_coord * v;
+  return texture_material->caracteristics_point(Point3(u,v,w));
 }
 
 std::ostream& operator<<(std::ostream& ost, const SmoothTriangle& triangle) {
-  ost << "{" << triangle.A << ", " << triangle.B << ", " << triangle.C << "}";
+  //ost << "{" << triangle.A << ", " << triangle.B << ", " << triangle.C << "}";
+  //TODO why doesn't it work
   return ost;
 }

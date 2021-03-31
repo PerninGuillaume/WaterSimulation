@@ -53,22 +53,6 @@ Vector3 Vector3::operator-() const {
   return Vector3(-this->x, -this->y, -this->z);
 }
 
-Point3 Vector3::operator+(const Point3 &p) const {
-    return Point3(this->x + p.x, this->y + p.y, this->z + p.z);
-}
-
-Point3 operator+(const Point3 &p, const Vector3 &v) {
-  return v + p;
-}
-
-Point3 Vector3::operator-(const Point3 &p) const {
-  return Point3(this->x - p.x, this->y - p.y, this->z - p.z);
-}
-
-Point3 operator-(const Point3 &p, const Vector3 &v) {
-  return Point3(p.x - v.x, p.y - v.y, p.z - v.z);
-}
-
 Vector3& Vector3::operator+=(const Vector3& v) {
   *this = *this + v;
   return *this;

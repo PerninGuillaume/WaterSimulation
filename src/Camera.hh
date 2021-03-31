@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include "Point3.hh"
 #include "Vector3.hh"
 
 class Camera

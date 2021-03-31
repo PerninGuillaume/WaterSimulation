@@ -197,9 +197,6 @@ void refraction_sphere_on_plane() {
   auto light = std::make_shared<Point_Light>(Point3(2, 0, 0), 5500);
   scene.add_object({circle, sphere1, ground, sphere2});
   scene.add_light(light);
-  //for (float f = 0.7; f < 1.2; f += 0.01) {
-  //  std::cout << f << " " << scene.raycast(Rayon(Vector3(4,0, f), center), scene.max_bounces);
-  //}
   std::cout << scene.raycast(Rayon(Vector3(4,0,0.98), center), scene.max_bounces);
   Image image = scene.raycasting();
   image.save_as_ppm("images/refraction_sphere.ppm");
@@ -228,10 +225,50 @@ void blob_test() {
   Image image = scene.raycasting();
   image.save_as_ppm("images/blob.ppm");
 }
+
+void create_polygon_in_scene(Scene& scene) {
+
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
+
+  std::vector<int> faceIndex = {4};
+  std::vector<int> vertexIndices = {0,1,2,3};
+  std::vector<Point3> points = {{4,-1,-1}, {4, -1, 1}, {4, 1, 1}, {4, 1, -1}};
+  std::vector<Vector3> normals = {{-1,0,0}, {-1,0,0}, {-1,0,0}, {-1,0,0}};
+  std::vector<Point3> textureCoordinates = {};
+  triangleMesh(scene, std::make_shared<Uniform_Texture>(caracteristics_blue), faceIndex, vertexIndices, points, normals,
+               textureCoordinates);
+}
+
+void polygon() {
+  Point3 center(0, 0, 2);
+  Point3 spotted_point(4, 0, 0);
+  Vector3 up(1, 0, 2);
+  float alpha = 45.0;
+  float beta = 45.0;
+  float zmin = 1.0; //Why changing this parameter does not affect the output image
+  Camera camera(center, spotted_point, up, alpha, beta, zmin);
+  Scene scene = Scene(camera, 5);
+  scene.msaa_samples = 4;
+  scene.set_epsilon(0.001);
+  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.1, 0.3, 1);
+  Caracteristics caracteristics_red(Pixel(255, 0, 0), 0.1, 0.3, 1);
+  auto ground = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_green),
+                                        Point3(0, 0, -1), Vector3(0, 0, 1));
+  auto triangle = std::make_shared<Triangle>(std::make_shared<Uniform_Texture>(caracteristics_red),
+                                             Point3(5,-1,1), Point3(4,-1,-1), Point3(4,1,0));
+  auto light = std::make_shared<Point_Light>(Point3(2, 0, 0), 5500);
+  scene.add_object(ground);
+  create_polygon_in_scene(scene);
+  scene.add_light(light);
+  std::cout << scene.raycast(Rayon(Vector3(4,0,0.98), center), scene.max_bounces);
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/polygon.ppm");
+}
+
 //TODO change the two planes in refraction test
-// debug print angle and total internal reflection angle each time
 int main() {
-  refraction_sphere_on_plane();
+  polygon();
+  //refraction_sphere_on_plane();
   //blob_test();
   //triangle_on_plane();
   //simple_plane();
