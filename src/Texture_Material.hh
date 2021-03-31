@@ -1,5 +1,6 @@
 #pragma once
 #include "Vector3.hh"
+#include "Image.hh"
 #include <optional>
 
 struct Caracteristics {
@@ -34,14 +35,11 @@ class Procedural_Texture : public Texture_Material {
 
 class Image_Texture : public Texture_Material {
  public:
-  explicit Image_Texture(Caracteristics caracteristics);
+  explicit Image_Texture(Caracteristics caracteristics, const std::string& filename);
   //I think the point ought to have 2 dimension and be the u and v coordinates
   //u and v between 0 and 1
   Caracteristics caracteristics_point(const Point3& point) override;
 
-  //std::string filename bitmap; or Image image; that is loaded by a ppm image
-  //int width
-  //int height
-
+  Image image;
 };
 

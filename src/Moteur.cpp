@@ -229,14 +229,15 @@ void blob_test() {
 void create_polygon_in_scene(Scene& scene) {
 
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
+  const std::string filename = "images/wood.ppm";
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
   std::vector<Point3> points = {{4,-1,-1}, {4, -1, 1}, {4, 1, 1}, {4, 1, -1}};
   std::vector<Vector3> normals = {{-1,0,0}, {-1,0,0}, {-1,0,0}, {-1,0,0}};
-  std::vector<Point3> textureCoordinates = {};
-  triangleMesh(scene, std::make_shared<Uniform_Texture>(caracteristics_blue), faceIndex, vertexIndices, points, normals,
-               textureCoordinates);
+  std::vector<Point3> textureCoordinates = {{0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}};
+  triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
+               , points, normals, textureCoordinates);
 }
 
 void polygon() {
@@ -256,7 +257,7 @@ void polygon() {
                                         Point3(0, 0, -1), Vector3(0, 0, 1));
   auto triangle = std::make_shared<Triangle>(std::make_shared<Uniform_Texture>(caracteristics_red),
                                              Point3(5,-1,1), Point3(4,-1,-1), Point3(4,1,0));
-  auto light = std::make_shared<Point_Light>(Point3(2, 0, 0), 5500);
+  auto light = std::make_shared<Point_Light>(Point3(2, 0, 0), 1000);
   scene.add_object(ground);
   create_polygon_in_scene(scene);
   scene.add_light(light);

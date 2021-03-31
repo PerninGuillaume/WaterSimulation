@@ -1,6 +1,8 @@
 #include <utility>
+#include <iostream>
 
 #include "Texture_Material.hh"
+#include "Image.hh"
 
 Caracteristics::Caracteristics()
   : pixel(Vector3())
@@ -27,8 +29,9 @@ Uniform_Texture::Uniform_Texture(Caracteristics caracteristics)
 Procedural_Texture::Procedural_Texture(Caracteristics caracteristics)
     : Texture_Material(std::move(caracteristics)) {}
 
-Image_Texture::Image_Texture(Caracteristics caracteristics)
-    : Texture_Material(std::move(caracteristics)) {}
+Image_Texture::Image_Texture(Caracteristics caracteristics, const std::string& filename)
+    : Texture_Material(std::move(caracteristics))
+    , image(Image(filename)) {}
 
 Caracteristics Uniform_Texture::caracteristics_point(const Point3&) {
   return caracteristics;
@@ -39,5 +42,10 @@ Caracteristics Procedural_Texture::caracteristics_point(const Point3 &point) {
 }
 
 Caracteristics Image_Texture::caracteristics_point(const Point3 &point) {
-  return caracteristics;
+  int x = point.x * image.width;
+  int y = point.y * image.height;
+  Pixel value = image.pixels[x + y * image.width];
+  Caracteristics res = caracteristics;
+  res.pixel = value;
+  return res;
 }

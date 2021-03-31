@@ -16,20 +16,21 @@ Image::Image(int width, int height)
 
   std::string tmp;
   file >> tmp;
-  if (tmp != "P3") {
+  if (tmp != "P3" && tmp != "P6") {
     std::cout << tmp << '\n';
-    throw std::invalid_argument("Not P3 it is " + tmp);
+    throw std::invalid_argument("Not P3 or P6 it is " + tmp);
   }
   file >> width;
   file >> height;
   file >> max_color_value;
   std::cout << "Width : " << width << " Height : " << height << " Max color value : " << max_color_value << '\n';
-  int color_value_red;
-  int color_value_green;
-  int color_value_blue;
-  while (file >> color_value_red && file >> color_value_green && file >> color_value_blue) {
-    pixels.emplace_back(color_value_red, color_value_green, color_value_blue);
+  file.ignore(256, '\n');
+  for (int i = 0; i < width * height; ++i) {
+    unsigned char buffer[3];
+    file.read(reinterpret_cast<char *>(buffer), 3);
+    pixels.emplace_back(buffer[0], buffer[1], buffer[2]);
   }
+  file.close();
 }
 
 unsigned char Image::compress_value(double value) {

@@ -1,24 +1,25 @@
 #include "Object.hh"
 #include <cmath>
+#include <utility>
 
 Object::Object(std::shared_ptr<Texture_Material> texture_material)
-  : texture_material(texture_material)
+  : texture_material(std::move(texture_material))
  {}
 
 Sphere::Sphere(std::shared_ptr<Texture_Material> texture_material, Point3 origin, double radius)
-    : Object{texture_material}
+    : Object{std::move(texture_material)}
     , origin(origin)
     , radius(radius)
 {}
 
 Plane::Plane(std::shared_ptr<Texture_Material> texture_material, Point3 point, Vector3 normal)
-    : Object{texture_material}
+    : Object{std::move(texture_material)}
     , point(point)
     , normal(normal.normalize())
 {}
 
   Triangle::Triangle(std::shared_ptr<Texture_Material> texture_material, Point3 A, Point3 B, Point3 C)
-    : Object{texture_material}
+    : Object{std::move(texture_material)}
     , A(A)
     , B(B)
     , C(C)
@@ -28,14 +29,18 @@ Plane::Plane(std::shared_ptr<Texture_Material> texture_material, Point3 point, V
 {}
 
 SmoothTriangle::SmoothTriangle(std::shared_ptr<Texture_Material> texture_material, Point3 A, Point3 B, Point3 C,
-                               Vector3 normA, Vector3 normB, Vector3 normC)
-    : Object{texture_material}
+                               Vector3 normA, Vector3 normB, Vector3 normC, std::optional<Point3> A_text_coord,
+                               std::optional<Point3> B_text_coord, std::optional<Point3> C_text_coord)
+    : Object{std::move(texture_material)}
     , A(A)
     , B(B)
     , C(C)
     , normA(normA)
     , normB(normB)
     , normC(normC)
+    , A_text_coord(std::move(A_text_coord))
+    , B_text_coord(std::move(B_text_coord))
+    , C_text_coord(std::move(C_text_coord))
 {}
 //-----------------------------------------------SPHERE------------------------------------------------------------//
 
@@ -204,8 +209,11 @@ Vector3 SmoothTriangle::normal_at_point(const Point3&, const Rayon& ray) {
 }
 
 Caracteristics SmoothTriangle::texture_at_point(const Point3& point) {
-  //A_text_coord * w + B_text_coord * u + C_text_coord * v;
-  return texture_material->caracteristics_point(Point3(u,v,w));
+  if (A_text_coord) {//We have texture coordinates and we compute the interpolated texture coordinate
+    Point3 coordinate = A_text_coord.value() * w + B_text_coord.value() * u + C_text_coord.value() * v;
+    return texture_material->caracteristics_point(coordinate);
+  }
+  return texture_material->caracteristics;
 }
 
 std::ostream& operator<<(std::ostream& ost, const SmoothTriangle& triangle) {

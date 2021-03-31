@@ -10,9 +10,13 @@ void triangleMesh(Scene& scene, std::shared_ptr<Texture_Material> texture_materi
   //or store a list of created triangle ?
   for (size_t i = 0, k = 0; i < faceIndex.size(); ++i) {
     for (int j = 0; j < faceIndex[i] - 2; ++j) {
-      scene.add_object(std::make_shared<SmoothTriangle>(texture_material, points[vertexIndices[k]]
-                                   , points[vertexIndices[k + j + 1]], points[vertexIndices[k + j + 2]], normals[k]
-                                   , normals[k + j + 1], normals[k + j + 2]));
+      int index_1 = k;
+      int index_2 = k + j + 1;
+      int index_3 = k + j + 2;
+      scene.add_object(std::make_shared<SmoothTriangle>(texture_material
+          , points[vertexIndices[index_1]], points[vertexIndices[index_2]], points[vertexIndices[index_3]]
+          , normals[index_1], normals[index_2], normals[index_3]
+          , textureCoordinates[index_1], textureCoordinates[index_2], textureCoordinates[index_3]));
       //TODO add texture_coordinates to the triangle
       //But where to add them ?
     }
