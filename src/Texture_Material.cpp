@@ -38,7 +38,16 @@ Caracteristics Uniform_Texture::caracteristics_point(const Point3&) {
 }
 
 Caracteristics Procedural_Texture::caracteristics_point(const Point3 &point) {
-  return caracteristics;
+  auto r = double(point.x);
+  auto g = double(point.y);
+  auto b = 0.25;
+
+  Caracteristics res = caracteristics;
+  res.pixel.x = 255.999 * r;
+  res.pixel.y = 255.999 * g;
+  res.pixel.z = 255.999 * b;
+
+  return res;
 }
 
 Caracteristics Image_Texture::caracteristics_point(const Point3 &point) {
