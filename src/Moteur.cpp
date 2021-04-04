@@ -292,7 +292,7 @@ void create_polygon_walls_in_scene(Scene& scene) {
 
 void create_polygon_water_in_scene(Scene& scene) {
 
-  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 0, 0.8);
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1, 1.33);
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
@@ -321,7 +321,7 @@ void pool() {
 
   auto light = std::make_shared<Point_Light>(Point3(2, 0, 0), 1000);
   auto light2 = std::make_shared<Point_Light>(Point3(0, 0, 10), 500);
-  auto sphere = std::make_shared<Sphere>(std::make_shared<Procedural_Texture>(caracteristics_yellow), Point3(3,0,-0.75), 0.25);
+  auto sphere = std::make_shared<Sphere>(std::make_shared<Procedural_Texture>(caracteristics_yellow), Point3(3,0.5,-0.75), 0.25);
   scene.add_light(light);
   scene.add_light(light2);
   scene.add_object({ground, sphere});
