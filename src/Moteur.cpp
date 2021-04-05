@@ -266,9 +266,50 @@ void polygon() {
   image.save_as_ppm("images/polygon.ppm");
 }
 
+void perlin_noise_2d() {
+  PerlinNoise perlinNoise(12);
+  unsigned imageWidth = 512;
+  unsigned imageHeight = 512;
+  double frequency = 0.05;
+  Image image(imageWidth, imageHeight);
+  for (unsigned i = 0; i < imageHeight; ++i) {
+    for (unsigned j = 0; j < imageWidth; ++j) {
+      double noise_value = (perlinNoise.eval(Point3(j, i, 0) * frequency) + 1) * 0.5;
+      noise_value *= 255;
+      std::cout << noise_value << '\n';
+      image.pixels.emplace_back(Pixel(noise_value, noise_value, noise_value));
+    }
+  }
+  image.save_as_ppm("images/noise.ppm");
+}
+
+void displacement() {
+  Point3 center(0, 0, 2);
+  Point3 spotted_point(4, 0, 0);
+  Vector3 up(1, 0, 2);
+  float alpha = 45.0;
+  float beta = 45.0;
+  float zmin = 1.0; //Why changing this parameter does not affect the output image
+  Camera camera(center, spotted_point, up, alpha, beta, zmin);
+  Scene scene = Scene(camera, 5);
+  Point3 A(4, -1, -1);
+  Point3 B(4, -1, 1);
+  Point3 C(4,1,1);
+  Point3 D(4, 1, -1);
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
+  auto texture = std::make_shared<Uniform_Texture>(caracteristics_blue);
+  rectangle_displaced_by_noise(scene, A, B, C , D, 1, 10, texture);
+  auto light = std::make_shared<Point_Light>(Point3(2, 0, 0), 1000);
+  scene.add_light(light);
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/displacement.ppm");
+}
+
 //TODO change the two planes in refraction test
 int main() {
-  polygon();
+  displacement();
+  //perlin_noise_2d();
+  //polygon();
   //refraction_sphere_on_plane();
   //blob_test();
   //triangle_on_plane();
