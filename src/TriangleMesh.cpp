@@ -4,8 +4,8 @@
 
 
 //Function for smooth triangle with textures
-void triangleMesh(Scene& scene, std::shared_ptr<Texture_Material> texture_material, const std::vector<int> &faceIndex
-                           , const std::vector<int> &vertexIndices, std::vector<Point3> points
+void triangleMesh(Scene& scene, const std::shared_ptr<Texture_Material>& texture_material, const std::vector<int> &faceIndex
+                           , const std::vector<int> &vertexIndices, const std::vector<Point3>& points
                            , const std::vector<Vector3> &normals, const std::vector<Point3>& textureCoordinates)
 {
   //or store a list of created triangle ?
@@ -16,8 +16,8 @@ void triangleMesh(Scene& scene, std::shared_ptr<Texture_Material> texture_materi
       int index_3 = k + j + 2;
       scene.add_object(std::make_shared<SmoothTriangle>(texture_material
           , points[vertexIndices[index_1]], points[vertexIndices[index_2]], points[vertexIndices[index_3]]
-          , normals[index_1], normals[index_2], normals[index_3]
-          , textureCoordinates[index_1], textureCoordinates[index_2], textureCoordinates[index_3]));
+          , normals[vertexIndices[index_1]], normals[vertexIndices[index_2]], normals[vertexIndices[index_3]]
+          , textureCoordinates[vertexIndices[index_1]], textureCoordinates[vertexIndices[index_2]], textureCoordinates[vertexIndices[index_3]]));
     }
     k += faceIndex[i];
   }
@@ -25,8 +25,8 @@ void triangleMesh(Scene& scene, std::shared_ptr<Texture_Material> texture_materi
 
 
 //Function for normal triangle and no textures
-void triangleMesh(Scene& scene, std::shared_ptr<Texture_Material> texture_material, const std::vector<int> &faceIndex
-        , const std::vector<int> &vertexIndices, std::vector<Point3> points)
+void triangleMesh(Scene& scene, const std::shared_ptr<Texture_Material>& texture_material, const std::vector<int> &faceIndex
+        , const std::vector<int> &vertexIndices, const std::vector<Point3>& points)
 {
   //or store a list of created triangle ?
   for (size_t i = 0, k = 0; i < faceIndex.size(); ++i) {
@@ -87,26 +87,39 @@ void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B
     }
   }
   PerlinNoise perlinNoise(12);
-  double frequency = 1.f;
-  /*for (unsigned i = 0; i < heightDivisions; ++i) {
-    for (unsigned j = 0; j < widthDivisions; ++j) {
-      perlinNoise.eval(Point3(j, i, 0) * frequency); //TODO if we had a 2d eval function, we could call this one
-
-    }
-  }
-   */
+  double frequency = 5.05f;
+  double amplitude = 1.f;
+  normal.normalize();
   unsigned numVertices = (heightDivisions + 1) * (widthDivisions + 1);
+  //Compute displacements
   for (unsigned i = 0; i < numVertices; ++i) {
     unsigned x = textureCoordinates[i].x * widthDivisions;
     unsigned y = textureCoordinates[i].y * heightDivisions;
-    points[i] += normal * perlinNoise.eval(Point3(x, y, 0) * frequency);
+    double value = perlinNoise.eval(Point3(x, y, 0) * frequency) * amplitude;//TODO if we had a 2d eval function, we could call this one
+    //std::cout << x  << ' ' << y << ' ' << value << '\n';
+    points[i] += normal * value;
     // Displace along the normal according to the noise generated at the 2D coordinates
   }
+  std::vector<Vector3> normals;
+  //Compute normals
+  for (unsigned i = 0; i < numVertices; ++i) {
+    Point3 point = points[vertexIndices[i]];
+    Point3 point_x = points[vertexIndices[i + 1]];
+    Point3 point_y = points[vertexIndices[i + 3]];
+    Vector3 tangent = Vector3(point, point_x);
+    Vector3 bitangent = Vector3(point, point_y);
+    Vector3 normal_point = bitangent.vector_product(tangent).normalize();
+    normals.emplace_back(normal_point);
 
-  //std::vector<int> vertexIndices = {0,1,2,3};
-  //std::vector<Point3> points = {{4,-1,-1}, {4, -1, 1}, {4, 1, 1}, {4, 1, -1}};
-  //std::vector<Vector3> normals = {{-1,0,0}, {-1,0,0}, {-1,0,0}, {-1,0,0}};
-  //std::vector<Point3> textureCoordinates = {{0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}};
-  triangleMesh(scene, std::move(textureMaterial), faceIndex, vertexIndices
-          , points);
+  }
+
+  bool smooth = false;
+  if (smooth) {
+    triangleMesh(scene, std::move(textureMaterial), faceIndex, vertexIndices
+        , points, normals, textureCoordinates);
+  }
+  else {
+    triangleMesh(scene, std::move(textureMaterial), faceIndex, vertexIndices
+        , points);
+  }
 }

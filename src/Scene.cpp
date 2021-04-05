@@ -210,27 +210,30 @@ Image Scene::raycasting() {
       Rayon ray(Vector3(this->camera.center, pixel_location).normalize(), this->camera.center);
       auto pixel = this->raycast(ray, this->max_bounces);
       image.pixels.push_back(pixel);
-      continue;
+    } else {
+      double red = 0.0, green = 0.0, blue = 0.0;
+      for (int i = 0; i < this->msaa_samples; ++i) {
+        auto random_location = pixel_location + distr(gen) * this->camera.unit_x_vector + distr(gen) * this->camera.unit_y_vector;
+        Rayon ray(Vector3(this->camera.center, random_location).normalize(), this->camera.center);
+        auto pixel = this->raycast(ray, this->max_bounces);
+        red += pixel.x;
+        green += pixel.y;
+        blue += pixel.z;
+      }
+      red /= this->msaa_samples;
+      green /= this->msaa_samples;
+      blue /= this->msaa_samples;
+      image.pixels.emplace_back(red, green, blue);
     }
-    double red = 0.0, green = 0.0, blue = 0.0;
-    for (int i = 0; i < this->msaa_samples; ++i) {
-      auto random_location = pixel_location + distr(gen) * this->camera.unit_x_vector + distr(gen) * this->camera.unit_y_vector;
-      Rayon ray(Vector3(this->camera.center, random_location).normalize(), this->camera.center);
-      auto pixel = this->raycast(ray, this->max_bounces);
-      red += pixel.x;
-      green += pixel.y;
-      blue += pixel.z;
-    }
-    red /= this->msaa_samples;
-    green /= this->msaa_samples;
-    blue /= this->msaa_samples;
-    image.pixels.emplace_back(red, green, blue);
     ++loading;
     int percentage = 100 * loading / nb_pixels;
     if (percentage > displayed) {
       std::cout << ' ' << displayed << ' ' << std::flush;
+      if (displayed == 50)
+        std::cout << '\n';
       ++displayed;
     }
   }
+  std::cout << "\nFinished render\n";
   return image;
 }
