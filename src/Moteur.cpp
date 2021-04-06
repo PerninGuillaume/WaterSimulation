@@ -75,19 +75,19 @@ void triangle_on_plane() {
 void smooth_triangle_on_plane() {
   Scene scene = Scene(create_standard_camera(), 5);
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
-  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0, 1);
-  Point3 A(1,0,0);//All those points are at the boundaries of the center_sphere of radius 1
+  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0.4, 1);
+  Point3 A(2,1,0);//All those points are at the boundaries of the center_sphere of radius 1
   Point3 B(2,0,1);
   Point3 C(2,-1,0);
-  Point3 center_sphere(2,0,0);
+  Point3 center_sphere(3,0,0);
   auto triangle1 = std::make_shared<SmoothTriangle>(std::make_shared<Uniform_Texture>(caracteristics_green),
                                               A, B, C, A - center_sphere, B - center_sphere, C - center_sphere);
   auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(5,0,0), Vector3(-1,0,0));
   scene.add_object({triangle1, plane});
-  auto light = std::make_shared<Point_Light>(Point3(2,0,3), 1000);
+  auto light = std::make_shared<Point_Light>(Point3(0,0,3), 1000);
   auto light2 = std::make_shared<Point_Light>(Point3(2,0,-0.5), 500);
   scene.add_light(light);
-  scene.add_light(light2);
+  //scene.add_light(light2);
   Image image = scene.raycasting();
   image.save_as_ppm("images/smooth_triangle_on_plane.ppm");
 }
@@ -177,17 +177,27 @@ void refraction_sphere_on_plane() {
 }
 
 void blob_test() {
-  Scene scene = Scene(create_standard_camera(), 2);
+  Scene scene = Scene(create_standard_camera(), 1);
   scene.msaa_samples = 1;
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0, 1);
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
-  Blob blob = Blob(Point3(4.5,0.2,-0.3), 12, 0.3, std::vector<Point3>{Point3(4,1.2,1), Point3(4, -1.2, 1.2)}, 1, std::make_shared<Uniform_Texture>(caracteristics_green));
+  Blob blob = Blob(Point3(4.5,0.2,-0.3), 12, 0.5, std::vector<Point3>{Point3(4,1.2,1), Point3(4, -1.2, 1)}, 1, std::make_shared<Uniform_Texture>(caracteristics_green));
+
   blob.marching_cubes(scene);
   std::cout << scene.objects.size() << '\n';
   auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(5,0,0), Vector3(-1,0,0));
-  scene.add_object(plane);
+  //scene.add_object(plane);
   auto light = std::make_shared<Point_Light>(Point3(2,0,0), 1000);
   scene.add_light(light);
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,1.2,-0.01)), scene.camera.center), 1) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,1.2,-0.02)), scene.camera.center), 1) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,1.2,-0.1)), scene.camera.center), 1) << '\n';
+  //TODO debug this thing, we have green then dark then green
+  //for (double i = 0; i < 0.2; i += 0.01) {
+  //  Point3 arrival(4,1.2, 0 - i);
+  //  std::cout << arrival << " : ";
+  //  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, arrival), scene.camera.center), 1) << '\n';
+  //}
   Image image = scene.raycasting();
   image.save_as_ppm("images/blob.ppm");
 }
@@ -257,15 +267,15 @@ void displacement() {
   float beta = 45.0;
   float zmin = 1.0; //Why changing this parameter does not affect the output image
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
-  Scene scene = Scene(camera, 5);
+  Scene scene = Scene(camera, 1);
   Point3 A(2, -1, -1);
   Point3 B(2, 1, -1);
   Point3 C(4,1,-1);
   Point3 D(4, -1, -1);
-  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
+  Caracteristics caracteristics_blue(Pixel(0, 0, 120), 0.4, 0, 0);
   auto texture = std::make_shared<Uniform_Texture>(caracteristics_blue);
   rectangle_displaced_by_noise(scene, A, B, C , D, 10, 10, texture);
-  auto light = std::make_shared<Point_Light>(Point3(2, 0, 0), 1000);
+  auto light = std::make_shared<Point_Light>(Point3(2, 0, 3), 1000);
   scene.add_light(light);
   Image image = scene.raycasting();
   image.save_as_ppm("images/displacement.ppm");
@@ -273,13 +283,13 @@ void displacement() {
 
 //TODO change the two planes in refraction test
 int main() {
-  //displacement();
+  displacement();
   //perlin_noise_2d();
   //polygon();
   //refraction_sphere_on_plane();
   //blob_test();
   //triangle_on_plane();
-  smooth_triangle_on_plane();
+  //smooth_triangle_on_plane();
   //simple_plane();
   //two_spheres_on_plane();
   //sphere_anti_aliased();

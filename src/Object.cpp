@@ -35,9 +35,9 @@ SmoothTriangle::SmoothTriangle(std::shared_ptr<Texture_Material> texture_materia
     , A(A)
     , B(B)
     , C(C)
-    , normA(normA)
-    , normB(normB)
-    , normC(normC)
+    , normA(normA.normalize())
+    , normB(normB.normalize())
+    , normC(normC.normalize())
     , A_text_coord(std::move(A_text_coord))
     , B_text_coord(std::move(B_text_coord))
     , C_text_coord(std::move(C_text_coord))
@@ -201,7 +201,8 @@ std::optional<double> SmoothTriangle::is_intersecting(const Rayon &ray) {
 
 //This function should be called only after is_intersecting has been called in order for u,v and w to be initialized
 Vector3 SmoothTriangle::normal_at_point(const Point3&, const Rayon& ray) {
-  Vector3 interpolatedVector = u * normA + v * normB + w * normC;
+  Vector3 interpolatedVector = w * normA + u * normB + v * normC;
+  interpolatedVector.normalize();
   if (ray.direction.scalar_product(interpolatedVector) > 0) {
     return -1.0 * interpolatedVector;
   }

@@ -1,4 +1,5 @@
 #include <utility>
+#include <stdexcept>
 
 #include "TriangleMesh.hh"
 
@@ -41,9 +42,10 @@ void triangleMesh(Scene& scene, const std::shared_ptr<Texture_Material>& texture
   }
 }
 
-void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B, const Point3& C, const Point3& D,
-                                  unsigned widthDivisions, unsigned heightDivisions, std::shared_ptr<Texture_Material> textureMaterial) {
-
+void create_base_rectangle(const Point3& A, const Point3& B, const Point3& C, const Point3& D,
+                           unsigned widthDivisions, unsigned heightDivisions, std::vector<int>& faceIndex,
+                           std::vector<Point3>& points, std::vector<int>& vertexIndices,
+                           std::vector<Point3>& textureCoordinates, Vector3& normal) {
   // A ----- B
   // |       |
   // |       |
@@ -51,21 +53,17 @@ void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B
   Vector3 AB = Vector3(A, B);
   Vector3 AD = Vector3(A, D);
   Vector3 AC = Vector3(A, C);
-  Vector3 normal = AB.vector_product(AC);
-  if (std::abs(normal.scalar_product(AD)) > scene.epsilon) {
-    std::cerr << "The 4 points are not in the same plane\n";
-    return;
+  normal = AB.vector_product(AC);
+  if (std::abs(normal.scalar_product(AD)) > 0.01) {
+    throw std::runtime_error("The 4 points are not in the same plane\n");
   }
+  normal.normalize(); //So it will be a good vector in the function calling this one
   unsigned nb_faces = widthDivisions * heightDivisions;
-  std::vector<int> faceIndex(static_cast<int>(nb_faces), 4);
+  faceIndex = std::vector<int>(static_cast<int>(nb_faces), 4);
   Vector3 width_delta = AB / widthDivisions;
   Vector3 height_delta = AD / heightDivisions;
   double width_delta_2D = 1.0 / widthDivisions;
   double height_delta_2D = 1.0 / heightDivisions;
-
-  std::vector<Point3> points;
-  std::vector<int> vertexIndices;
-  std::vector<Point3> textureCoordinates;
 
   Point3 current_point = A, current_height = A;
   for (unsigned i = 0; i <= heightDivisions; ++i) {
@@ -86,40 +84,60 @@ void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B
       vertexIndices.emplace_back((i + 1) * (widthDivisions + 1) + j);
     }
   }
+}
+
+void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B, const Point3& C, const Point3& D,
+                                  unsigned widthDivisions, unsigned heightDivisions, std::shared_ptr<Texture_Material> textureMaterial,
+                                  bool analytical_normals, bool smooth) {
+
+
+  std::vector<int> faceIndex;
+  std::vector<Point3> points;
+  std::vector<int> vertexIndices;
+  std::vector<Point3> textureCoordinates;
+  Vector3 normal;
+  create_base_rectangle(A, B, C, D, widthDivisions, heightDivisions, faceIndex, points, vertexIndices,
+                        textureCoordinates, normal);
+  std::vector<Vector3> normals;
   PerlinNoise perlinNoise(12);
-  double frequency = 5.05f;
-  double amplitude = 1.f;
-  normal.normalize();
+  double frequency = 1.25f;
+  double amplitude = 0.5f;
   unsigned numVertices = (heightDivisions + 1) * (widthDivisions + 1);
   //Compute displacements
   for (unsigned i = 0; i < numVertices; ++i) {
     unsigned x = textureCoordinates[i].x * widthDivisions;
     unsigned y = textureCoordinates[i].y * heightDivisions;
-    double value = perlinNoise.eval(Point3(x, y, 0) * frequency) * amplitude;//TODO if we had a 2d eval function, we could call this one
-    //std::cout << x  << ' ' << y << ' ' << value << '\n';
-    points[i] += normal * value;
-    // Displace along the normal according to the noise generated at the 2D coordinates
-  }
-  std::vector<Vector3> normals;
-  //Compute normals
-  for (unsigned i = 0; i < numVertices; ++i) {
-    Point3 point = points[vertexIndices[i]];
-    Point3 point_x = points[vertexIndices[i + 1]];
-    Point3 point_y = points[vertexIndices[i + 3]];
-    Vector3 tangent = Vector3(point, point_x);
-    Vector3 bitangent = Vector3(point, point_y);
-    Vector3 normal_point = bitangent.vector_product(tangent).normalize();
-    normals.emplace_back(normal_point);
 
+    if (analytical_normals) {
+      Vector3 derivatives;
+      double value = perlinNoise.eval(Point3(x, y, 0) * frequency, derivatives) * amplitude;//TODO if we had a 2d eval function, we could call this one
+      points[i] += normal * value;
+      // Displace along the normal according to the noise generated at the 2D coordinates
+      normals.emplace_back(Vector3(-derivatives.x, 1, -derivatives.z).normalize());
+    }
+    else {
+      double value = perlinNoise.eval(Point3(x, y, 0) * frequency) * amplitude;//TODO if we had a 2d eval function, we could call this one
+      points[i] += normal * value;
+    }
+  }
+  if (!analytical_normals) {
+    //Compute normals
+    for (unsigned i = 0; i < numVertices; ++i) {
+      Point3 point = points[vertexIndices[i]];
+      Point3 point_x = points[vertexIndices[i + 1]];
+      Point3 point_y = points[vertexIndices[i + 3]];
+      Vector3 tangent = Vector3(point, point_x);
+      Vector3 bitangent = Vector3(point, point_y);
+      Vector3 normal_point = bitangent.vector_product(tangent).normalize();
+      normals.emplace_back(normal_point);
+
+    }
   }
 
-  bool smooth = false;
-  if (smooth) {
+  if (smooth)
     triangleMesh(scene, std::move(textureMaterial), faceIndex, vertexIndices
         , points, normals, textureCoordinates);
-  }
-  else {
+  else
     triangleMesh(scene, std::move(textureMaterial), faceIndex, vertexIndices
         , points);
-  }
 }
