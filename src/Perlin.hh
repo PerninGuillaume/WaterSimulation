@@ -52,5 +52,6 @@ public:
 
 double lerp(double v0, double v1, double t);
 double smoothStep_3rd_order(double x);
+double smoothStep_3rd_order_derivative(double x);
 double smoothStep_5th_order(double x);
 double smoothStep_5th_order_derivative(double x);

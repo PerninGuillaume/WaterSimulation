@@ -84,13 +84,13 @@ double PerlinNoise::eval(const Point3 &p, Vector3& derivatives) {
   double ty = p.y - std::floor(p.y);
   double tz = p.z - std::floor(p.z);
 
-  double u = smoothStep_5th_order(tx);
-  double v = smoothStep_5th_order(ty);
-  double w = smoothStep_5th_order(tz);
+  double u = smoothStep_3rd_order(tx);
+  double v = smoothStep_3rd_order(ty);
+  double w = smoothStep_3rd_order(tz);
 
-  double du = smoothStep_5th_order_derivative(tx);
-  double dv = smoothStep_5th_order_derivative(ty);
-  double dw = smoothStep_5th_order_derivative(tz);
+  double du = smoothStep_3rd_order_derivative(tx);
+  double dv = smoothStep_3rd_order_derivative(ty);
+  double dw = smoothStep_3rd_order_derivative(tz);
 
   //Random vector at each corner
   Vector3 g_000 = gradients[permute(x0, y0, z0)];
@@ -137,7 +137,7 @@ double PerlinNoise::eval(const Point3 &p, Vector3& derivatives) {
 }
 
 int PerlinNoise::permute(int x, int y, int z) {
-  return permutations[permutations[x] + y] + z;
+  return permutations[permutations[permutations[x] + y] + z];
 }
 
 double lerp(double v0, double v1, double t) {
@@ -146,6 +146,10 @@ double lerp(double v0, double v1, double t) {
 
 double smoothStep_3rd_order(double x) {
   return x * x * (-2 * x + 3);
+}
+
+double smoothStep_3rd_order_derivative(double x) {
+  return x * (6 - 6 * x);
 }
 
 double smoothStep_5th_order(double x) {

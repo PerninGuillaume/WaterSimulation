@@ -45,6 +45,10 @@ Vector3 Vector3::operator+(const Vector3 &v) const {
     return Vector3(this->x + v.x, this->y + v.y, this->z + v.z);
 }
 
+Vector3 Vector3::operator+(double t) const {
+  return Vector3(this->x + t, this->y + t, this->z + t);
+}
+
 Vector3 Vector3::operator-(const Vector3 &v) const {
     return Vector3(this->x - v.x, this->y - v.y, this->z - v.z);
 }
@@ -64,6 +68,10 @@ Vector3 Vector3::operator/(double t) {
 
 Vector3& Vector3::operator/=(const double t) {
   return *this *= 1/t;
+}
+
+bool Vector3::operator==(const Vector3& v) {
+  return this->x == v.x && this->y == v.y && this->z == v.z;
 }
 
 double Vector3::norm() const {

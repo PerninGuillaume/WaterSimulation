@@ -15,9 +15,22 @@ void triangleMesh(Scene& scene, const std::shared_ptr<Texture_Material>& texture
       int index_1 = k;
       int index_2 = k + j + 1;
       int index_3 = k + j + 2;
+      Point3 A = points[vertexIndices[index_1]];
+      Point3 B = points[vertexIndices[index_2]];
+      Point3 C = points[vertexIndices[index_3]];
+      Vector3 normalA = normals[vertexIndices[index_1]];
+      Vector3 normalB = normals[vertexIndices[index_2]];
+      Vector3 normalC = normals[vertexIndices[index_3]];
+      Vector3 faceNormal = Vector3(A, B).vector_product(Vector3(A,C));
+      if (normalA == Vector3()) //not initialized
+        normalA = faceNormal;
+      if (normalB == Vector3()) //not initialized
+        normalB = faceNormal;
+      if (normalC == Vector3()) //not initialized
+        normalC = faceNormal;
       scene.add_object(std::make_shared<SmoothTriangle>(texture_material
-          , points[vertexIndices[index_1]], points[vertexIndices[index_2]], points[vertexIndices[index_3]]
-          , normals[vertexIndices[index_1]], normals[vertexIndices[index_2]], normals[vertexIndices[index_3]]
+          , A, B, C
+          , normalA, normalB, normalC
           , textureCoordinates[vertexIndices[index_1]], textureCoordinates[vertexIndices[index_2]], textureCoordinates[vertexIndices[index_3]]));
     }
     k += faceIndex[i];
@@ -98,38 +111,45 @@ void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B
   Vector3 normal;
   create_base_rectangle(A, B, C, D, widthDivisions, heightDivisions, faceIndex, points, vertexIndices,
                         textureCoordinates, normal);
-  std::vector<Vector3> normals;
   PerlinNoise perlinNoise(12);
   double frequency = 1.25f;
   double amplitude = 0.5f;
   unsigned numVertices = (heightDivisions + 1) * (widthDivisions + 1);
+  std::vector<Vector3> normals(numVertices, Vector3());
   //Compute displacements
   for (unsigned i = 0; i < numVertices; ++i) {
-    unsigned x = textureCoordinates[i].x * widthDivisions;
-    unsigned y = textureCoordinates[i].y * heightDivisions;
+    //unsigned x = textureCoordinates[i].x * widthDivisions;
+    //unsigned y = textureCoordinates[i].y * heightDivisions;
 
     if (analytical_normals) {
+
       Vector3 derivatives;
-      double value = perlinNoise.eval(Point3(x, y, 0) * frequency, derivatives) * amplitude;//TODO if we had a 2d eval function, we could call this one
+      //double value = perlinNoise.eval(Point3(x, y, 0) * frequency, derivatives) * amplitude;//TODO if we had a 2d eval function, we could call this one
+      double value = perlinNoise.eval(points[i] + 0.5, derivatives);//TODO if we had a 2d eval function, we could call this one
       points[i] += normal * value;
       // Displace along the normal according to the noise generated at the 2D coordinates
-      normals.emplace_back(Vector3(-derivatives.x, 1, -derivatives.z).normalize());
+      normals[i] = (Vector3(-derivatives.x, -derivatives.y, 1).normalize());
     }
     else {
-      double value = perlinNoise.eval(Point3(x, y, 0) * frequency) * amplitude;//TODO if we had a 2d eval function, we could call this one
+      //double value = perlinNoise.eval(Point3(x, y, 0) * frequency) * amplitude;//TODO if we had a 2d eval function, we could call this one
+      double value = perlinNoise.eval(points[i] * frequency) * amplitude;//TODO if we had a 2d eval function, we could call this one
       points[i] += normal * value;
     }
   }
-  if (!analytical_normals) {
+  unsigned nb_faces = widthDivisions * heightDivisions;
+
+  if (!analytical_normals && smooth) {
     //Compute normals
-    for (unsigned i = 0; i < numVertices; ++i) {
-      Point3 point = points[vertexIndices[i]];
-      Point3 point_x = points[vertexIndices[i + 1]];
-      Point3 point_y = points[vertexIndices[i + 3]];
-      Vector3 tangent = Vector3(point, point_x);
-      Vector3 bitangent = Vector3(point, point_y);
+    for (unsigned i = 0, off = 0; i < nb_faces; ++i) {
+      unsigned nverts = faceIndex[i];
+      Point3 point = points[vertexIndices[off]];
+      Point3 point_x = points[vertexIndices[off + 1]];
+      Point3 point_y = points[vertexIndices[off + nverts - 1]];
+      Vector3 tangent = point_x - point;
+      Vector3 bitangent = point_y - point;
       Vector3 normal_point = bitangent.vector_product(tangent).normalize();
-      normals.emplace_back(normal_point);
+      normals[vertexIndices[off]] = normal_point;
+      off += nverts;
 
     }
   }
