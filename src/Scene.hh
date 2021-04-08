@@ -23,9 +23,9 @@ class Scene
 public:
     Scene(Camera camera, unsigned int max_bounces);
     
-    Scene& add_object(std::shared_ptr<Object> object);
+    Scene& add_object(const std::shared_ptr<Object>& object);
     void add_object(const std::vector<std::shared_ptr<Object>>& objects_to_add);
-    Scene& add_light(std::shared_ptr<Light> light);
+    Scene& add_light(const std::shared_ptr<Light>& light);
 
     bool is_hidden(const Rayon& ray, double point_to_light_norm);
 
@@ -36,15 +36,13 @@ public:
                          const Caracteristics& caracteristics, const std::shared_ptr<Object>& object);
 
     //This function returns the ratio of energy that is reflected, between 0 and 1
-    double fresnel(const Vector3& incident, const Vector3& normal, double index_refraction);
+    static double fresnel(const Vector3& incident, const Vector3& normal, double index_refraction);
 
     PointIntersection find_intersection(Rayon ray);
 
     Image raycasting();
 
     Pixel raycast(const Rayon& ray, unsigned int bounces);
-
-    void set_epsilon(double epsilon);
 
     std::vector<std::shared_ptr<Object>> objects = {};
     std::vector<std::shared_ptr<Light>> lights = {};
@@ -57,8 +55,8 @@ public:
     bool shadow = true;
     bool refraction = true;
     int msaa_samples = 1;
-    int width = 500;
-    int height = 500;
+    int width = 800;
+    int height = 450;
 
 };
 

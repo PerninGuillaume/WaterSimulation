@@ -6,7 +6,7 @@ Camera create_standard_camera() {
   Point3 center(0,0,0);
   Point3 spotted_point(2,0,0);
   Vector3 up(0,0,1);
-  float alpha = 45.0;
+  float alpha = 60.64;//For a ratio of 16/9
   float beta = 45.0;
   float zmin = 1.0; //Why changing this parameter does not affect the output image
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
@@ -94,6 +94,7 @@ void smooth_triangle_on_plane() {
 
 void two_spheres_on_plane() {
   Scene scene = Scene(create_standard_camera(), 5);
+  scene.msaa_samples = 4;
   Caracteristics caracteristics_blue(Pixel(0, 0, 70), 0.1, 0.5, 1);
   Caracteristics caracteristics_yellow(Pixel(255, 255, 0), 0.6, 0.3, 100);
   Caracteristics caracteristics_grey(Pixel(127, 128, 137), 0.2, 0.3, 1);
@@ -151,7 +152,6 @@ void refraction_sphere_on_plane() {
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
   Scene scene = Scene(camera, 5);
   scene.msaa_samples = 4;
-  scene.set_epsilon(0.001);
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.1, 0.3, 1);
   Caracteristics caracteristics_red(Pixel(255, 0, 0), 0.1, 0.3, 1);
@@ -181,7 +181,7 @@ void blob_test() {
   scene.msaa_samples = 1;
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0, 1);
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
-  Blob blob = Blob(Point3(4.5,0.2,-0.3), 12, 0.5, std::vector<Point3>{Point3(4,1.2,1), Point3(4, -1.2, 1)}, 1, std::make_shared<Uniform_Texture>(caracteristics_green));
+  Blob blob = Blob(Point3(4.5,0.2,-0.3), 12, 0.1, std::vector<Point3>{Point3(4,1.2,1), Point3(4, -1.2, 1)}, 1, std::make_shared<Uniform_Texture>(caracteristics_green));
 
   blob.marching_cubes(scene);
   std::cout << scene.objects.size() << '\n';
@@ -226,7 +226,6 @@ void polygon() {
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
   Scene scene = Scene(camera, 5);
   scene.msaa_samples = 4;
-  scene.set_epsilon(0.001);
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.1, 0.3, 1);
   Caracteristics caracteristics_red(Pixel(255, 0, 0), 0.1, 0.3, 1);
   auto ground = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_green),
@@ -268,10 +267,10 @@ void displacement() {
   float zmin = 1.0; //Why changing this parameter does not affect the output image
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
   Scene scene = Scene(camera, 1);
-  Point3 A(2, -3, 1);
-  Point3 B(2, 3, 1);
-  Point3 C(4,3,1);
-  Point3 D(4, -3, 1);
+  Point3 A(2, -3, -1);
+  Point3 B(2, 3, -1);
+  Point3 C(4,3,-1);
+  Point3 D(4, -3, -1);
   Caracteristics caracteristics_blue(Pixel(120, 120, 120), 0.8, 0.8, 0);
   auto texture = std::make_shared<Uniform_Texture>(caracteristics_blue);
   rectangle_displaced_by_noise(scene, A, B, C , D, 10, 10, texture, true, true);
@@ -294,15 +293,15 @@ void displacement() {
 
 //TODO change the two planes in refraction test
 int main() {
-  displacement();
+  //displacement();
   //perlin_noise_2d();
   //polygon();
   //refraction_sphere_on_plane();
   //blob_test();
-  //triangle_on_plane();
-  //smooth_triangle_on_plane();
+  triangle_on_plane();
+  smooth_triangle_on_plane();
   //simple_plane();
-  two_spheres_on_plane();
+  //two_spheres_on_plane();
   //sphere_anti_aliased();
 }
 

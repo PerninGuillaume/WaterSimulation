@@ -2,6 +2,9 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <chrono>
+#include <algorithm>
+#include <utility>
 
 #include "Vector3.hh"
 
@@ -20,27 +23,23 @@ PointIntersection::PointIntersection()
 PointIntersection::PointIntersection(bool is_intersecting, std::shared_ptr<Object> intersecting_object,
                                      Point3 intersection_point, Caracteristics caracteristics)
     : is_intersecting(is_intersecting)
-    , intersecting_object(intersecting_object)
+    , intersecting_object(std::move(intersecting_object))
     , intersection_point(intersection_point)
-    , caracteristics(caracteristics){}
+    , caracteristics(std::move(caracteristics)){}
 
 
 void Scene::add_object(const std::vector<std::shared_ptr<Object>>& objects_to_add) {
   objects.insert(objects.end(), objects_to_add.begin(), objects_to_add.end());
 }
 
-Scene& Scene::add_object(std::shared_ptr<Object> object) {
+Scene& Scene::add_object(const std::shared_ptr<Object>& object) {
   objects.push_back(object);
   return *this;
 }
 
-Scene& Scene::add_light(std::shared_ptr<Light> light) {
+Scene& Scene::add_light(const std::shared_ptr<Light>& light) {
   lights.push_back(light);
   return *this;
-}
-
-void Scene::set_epsilon(double epsilon) {
-  this->epsilon = epsilon;
 }
 
 bool Scene::is_hidden(const Rayon& ray, double max_t) {
@@ -49,9 +48,9 @@ bool Scene::is_hidden(const Rayon& ray, double max_t) {
   }
 
   std::shared_ptr<Object> intersecting_object;
-  for (const auto& object : this->objects) {
+  return std::any_of(this->objects.begin(), this->objects.end(), [this, ray, max_t](auto object) {
     if (object->texture_material->caracteristics.index_refraction.has_value()) {
-      continue; //We can reach the light eventhough we intersect with a transparent object
+      return false; //We can reach the light eventhough we intersect with a transparent object
     }
     std::optional<double> t = object->is_intersecting(ray);
     if (t) {
@@ -59,13 +58,13 @@ bool Scene::is_hidden(const Rayon& ray, double max_t) {
       //with t < max_t, we won't find an intersection behind a light when we want to know if we are in the shadows
       if (t > this->epsilon) {
         if (t > max_t - this->epsilon) {
-          continue;
+          return false;
         }
         return true;
       }
     }
-  }
-  return false;
+    return false;
+  });
 }
 
 Pixel Scene::diffuse_light(const Point3& intersection_point, const Caracteristics& caracteristics,
@@ -202,23 +201,25 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
 }
 
 Image Scene::raycasting() {
+  auto start = std::chrono::high_resolution_clock::now();
   Image image(width, height);
   auto pixels_location = this->camera.pixels_location(width, height);
   std::random_device rd; // obtain a random number from hardware
   std::mt19937 gen(rd()); // seed the generator
   std::uniform_real_distribution<> distr(-0.5, 0.5); // define the range
   int loading = 0;
-  int nb_pixels = height * width;
+  const size_t nb_pixels = height * width;
   int displayed = 0;
-  for (const auto& pixel_location : pixels_location) {
+  //#pragma omp parallel for ordered
+  for (size_t index_pixel = 0; index_pixel < nb_pixels; ++index_pixel) {
     if (this->msaa_samples == 1) {
-      Rayon ray(Vector3(this->camera.center, pixel_location).normalize(), this->camera.center);
+      Rayon ray(Vector3(this->camera.center, pixels_location[index_pixel]).normalize(), this->camera.center);
       auto pixel = this->raycast(ray, this->max_bounces);
-      image.pixels.push_back(pixel);
+      image.pixels[index_pixel] = pixel;
     } else {
       double red = 0.0, green = 0.0, blue = 0.0;
       for (int i = 0; i < this->msaa_samples; ++i) {
-        auto random_location = pixel_location + distr(gen) * this->camera.unit_x_vector + distr(gen) * this->camera.unit_y_vector;
+        auto random_location = pixels_location[index_pixel] + distr(gen) * this->camera.unit_x_vector + distr(gen) * this->camera.unit_y_vector;
         Rayon ray(Vector3(this->camera.center, random_location).normalize(), this->camera.center);
         auto pixel = this->raycast(ray, this->max_bounces);
         red += pixel.x;
@@ -228,7 +229,7 @@ Image Scene::raycasting() {
       red /= this->msaa_samples;
       green /= this->msaa_samples;
       blue /= this->msaa_samples;
-      image.pixels.emplace_back(red, green, blue);
+      image.pixels[index_pixel] = Pixel(red, green, blue);
     }
     ++loading;
     int percentage = 100 * loading / nb_pixels;
@@ -240,5 +241,8 @@ Image Scene::raycasting() {
     }
   }
   std::cout << "\nFinished render\n";
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+  std::cout << "Execution time : " << duration.count() << " seconds\n";
   return image;
 }

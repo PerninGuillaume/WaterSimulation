@@ -5,7 +5,8 @@
 
 Image::Image(int width, int height)
 : width(width)
-, height(height) {}
+, height(height)
+, pixels(std::vector<Pixel>(width * height)){}
 
   Image::Image(const std::string& input_filename) {
   std::ifstream file;
@@ -39,6 +40,7 @@ unsigned char Image::compress_value(double value) {
 
 void Image::save_as_ppm(const std::string& filename) {
     std::ofstream file;
+    std::cout << "Saving " << filename << '\n';
     file.open(filename);
     file << "P6\n";
     file << width << " " << height << '\n';
