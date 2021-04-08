@@ -48,6 +48,8 @@ public:
                                          157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254, 138, 236, 205,
                                          93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180};
   double eval(const Point3 &p, Vector3 &derivatives);
+  int permute_2d(int x, int y);
+  double eval_2d(const Point3 &p, Vector3 &derivatives);
 };
 
 double lerp(double v0, double v1, double t);

@@ -68,13 +68,15 @@ bool Scene::is_hidden(const Rayon& ray, double max_t) {
   return false;
 }
 
-Pixel Scene::diffuse_light(const Point3& intersection_point, const Vector3& normal, const Caracteristics& caracteristics) {
+Pixel Scene::diffuse_light(const Point3& intersection_point, const Caracteristics& caracteristics,
+                           const std::shared_ptr<Object>& object) {
   Pixel diffuse_intensity(0,0,0);
   for (const auto& light : this->lights) {
     Vector3 point_to_light_vector = Vector3(intersection_point, light->origin);
     double point_to_light_norm = point_to_light_vector.norm();
     Vector3 point_to_light = point_to_light_vector.normalize();
     if (is_hidden(Rayon(point_to_light, intersection_point),  point_to_light_norm)) {continue;}
+    Vector3 normal = object->normal_at_point(intersection_point, Rayon(-point_to_light, light->origin));
 
     diffuse_intensity += (caracteristics.pixel * caracteristics.kd * light->colors)
                          * normal.scalar_product(point_to_light, true);
@@ -82,13 +84,16 @@ Pixel Scene::diffuse_light(const Point3& intersection_point, const Vector3& norm
   return diffuse_intensity;
 }
 
-Pixel Scene::specular_light(const Point3& intersection_point, const Vector3& reflected_vector, const Caracteristics& caracteristics) {
+Pixel Scene::specular_light(const Point3& intersection_point, const Vector3& incident_vector, const Caracteristics& caracteristics,
+                            const std::shared_ptr<Object>& object) {
   Pixel specular_intensity(0,0,0);
   for (const auto& light : this->lights) {
     Vector3 point_to_light_vector = Vector3(intersection_point, light->origin);
     double point_to_light_norm = point_to_light_vector.norm();
     Vector3 point_to_light = point_to_light_vector.normalize();
     if (is_hidden(Rayon(point_to_light, intersection_point),  point_to_light_norm)) {continue;}
+    Vector3 normal = object->normal_at_point(intersection_point, Rayon(-point_to_light, light->origin));
+    Vector3 reflected_vector = reflection_vector(incident_vector, normal);
 
     specular_intensity += caracteristics.ks
                           * std::pow(reflected_vector.scalar_product(point_to_light, true), caracteristics.ns) * light->colors;
@@ -183,11 +188,11 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
     result += reflex * kr + refrac * (1.0 - kr);
   }
   else {
-    if (diffusion) {
-      result += this->diffuse_light(intersection_point, normal, caracteristics);
+    if (diffusion && caracteristics.kd != 0) {
+      result += this->diffuse_light(intersection_point, caracteristics, intersecting_object);
     }
-    if (specularity) {
-      result += this->specular_light(intersection_point, reflected_vector, caracteristics);
+    if (specularity && caracteristics.ks != 0) {
+      result += this->specular_light(intersection_point, incident_vector, caracteristics, intersecting_object);
     }
     if (reflection) {
       result += caracteristics.ks * this->raycast(Rayon(reflected_vector, intersection_point), bounces - 1);

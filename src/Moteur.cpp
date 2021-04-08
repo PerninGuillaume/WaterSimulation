@@ -268,16 +268,16 @@ void displacement() {
   float zmin = 1.0; //Why changing this parameter does not affect the output image
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
   Scene scene = Scene(camera, 1);
-  Point3 A(2, -3, -1);
-  Point3 B(2, 3, -1);
-  Point3 C(4,3,-1);
-  Point3 D(4, -3, -1);
-  Caracteristics caracteristics_blue(Pixel(120, 120, 120), 0.4, 0, 0);
+  Point3 A(2, -3, 1);
+  Point3 B(2, 3, 1);
+  Point3 C(4,3,1);
+  Point3 D(4, -3, 1);
+  Caracteristics caracteristics_blue(Pixel(120, 120, 120), 0.8, 0.8, 0);
   auto texture = std::make_shared<Uniform_Texture>(caracteristics_blue);
-  rectangle_displaced_by_noise(scene, A, B, C , D, 10, 10, texture, false, false);
+  rectangle_displaced_by_noise(scene, A, B, C , D, 10, 10, texture, true, true);
 
-  auto triangle = std::make_shared<SmoothTriangle>(texture, Point3(2,0,-1.13284), Point3(4,3,-0.9516), Point3(4,0,-1.075809),
-                                                   Vector3(-0.379586,0.925,0), Vector3(0.3431,0.9392,0), Vector3(0.492,0.8765,0));
+  //auto triangle = std::make_shared<SmoothTriangle>(texture, Point3(2,0,-1.13284), Point3(4,3,-0.9516), Point3(4,0,-1.075809),
+  //                                                 Vector3(-0.379586,0.925,0), Vector3(0.3431,0.9392,0), Vector3(0.492,0.8765,0));
   //scene.add_object(triangle);
   auto light = std::make_shared<Point_Light>(Point3(3, 0, 3), 1000);
   scene.add_light(light);
@@ -302,7 +302,7 @@ int main() {
   //triangle_on_plane();
   //smooth_triangle_on_plane();
   //simple_plane();
-  //two_spheres_on_plane();
+  two_spheres_on_plane();
   //sphere_anti_aliased();
 }
 

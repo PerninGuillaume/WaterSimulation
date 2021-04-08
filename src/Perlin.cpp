@@ -66,6 +66,56 @@ double PerlinNoise::eval(const Point3 &p) {
 
   return g;
 }
+
+//we don't care about the z coordinates
+double PerlinNoise::eval_2d(const Point3 &p, Vector3& derivatives) {
+  //The & operator act as a modulo operator in this case but even nicer
+  //-10 % 256 = -10
+  //-10 & 256 = 246
+  //Coordinates of the corners surrounding the point
+  int x0 = static_cast<int>(std::floor(p.x)) & tableSizeMask;
+  int x1 = (x0 + 1) & tableSizeMask;
+  int y0 = static_cast<int>(std::floor(p.y)) & tableSizeMask;
+  int y1 = (y0 + 1) & tableSizeMask;
+
+  //Translation from the bottom of the cube formed by the cell to the point
+  double tx = p.x - std::floor(p.x);
+  double ty = p.y - std::floor(p.y);
+
+  double u = smoothStep_5th_order(tx);
+  double v = smoothStep_5th_order(ty);
+
+  double du = smoothStep_5th_order_derivative(tx);
+  double dv = smoothStep_5th_order_derivative(ty);
+
+  //Random vector at each corner
+  Vector3 g_00 = gradients[permute_2d(x0, y0)];
+  Vector3 g_01 = gradients[permute_2d(x0, y1)];
+  Vector3 g_10 = gradients[permute_2d(x1, y0)];
+  Vector3 g_11 = gradients[permute_2d(x1, y1)];
+
+  //offset vectors from each corner to the candidate point
+  Vector3 offset_00 = Vector3(tx, ty, 0);
+  Vector3 offset_01 = Vector3(tx, ty - 1, 0);
+  Vector3 offset_10 = Vector3(tx - 1, ty, 0);
+  Vector3 offset_11 = Vector3(tx - 1, ty - 1, 0);
+
+  double a = offset_00.scalar_product(g_00);
+  double b = offset_01.scalar_product(g_01);
+  double c = offset_10.scalar_product(g_10);
+  double d = offset_11.scalar_product(g_11);
+
+  double k0 = (c - a);
+  double k1 = (b - a);
+  double k3 = (a + d - b - c);
+
+  derivatives.x = du * (k0 + v * k3);
+  derivatives.y = dv * (k1 + u * k3);
+  derivatives.z = 0;
+
+  return a + u * k0 + v * k1 + u * v * k3;
+}
+
 //Do we want a 3d point or 2D for displacement
 double PerlinNoise::eval(const Point3 &p, Vector3& derivatives) {
   //The & operator act as a modulo operator in this case but even nicer
@@ -138,6 +188,10 @@ double PerlinNoise::eval(const Point3 &p, Vector3& derivatives) {
 
 int PerlinNoise::permute(int x, int y, int z) {
   return permutations[permutations[permutations[x] + y] + z];
+}
+
+int PerlinNoise::permute_2d(int x, int y) {
+  return permutations[permutations[x] + y];
 }
 
 double lerp(double v0, double v1, double t) {
