@@ -193,7 +193,7 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
     if (specularity && caracteristics.ks != 0) {
       result += this->specular_light(intersection_point, incident_vector, caracteristics, intersecting_object);
     }
-    if (reflection) {
+    if (reflection && caracteristics.ks != 0) {
       result += caracteristics.ks * this->raycast(Rayon(reflected_vector, intersection_point), bounces - 1);
     }
   }

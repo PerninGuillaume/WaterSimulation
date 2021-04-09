@@ -127,7 +127,7 @@ void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B
       //double value = perlinNoise.eval(Point3(x, y, 0) * frequency, derivatives) * amplitude;//TODO if we had a 2d eval function, we could call this one
       //double value = perlinNoise.eval(Point3(points[i].x + 0.5, points[i].y + 0.5, 0), derivatives);//TODO if we had a 2d eval function, we could call this one
       //double value = perlinNoise.eval(points[i] + 0.5, derivatives);//TODO if we had a 2d eval function, we could call this one
-      double value = perlinNoise.eval_2d(points[i], derivatives);
+      double value = perlinNoise.eval_2d(points[i], derivatives) * amplitude;
       points[i] += normal * value;
       // Displace along the normal according to the noise generated at the 2D coordinates
       normals[i] = (Vector3(-derivatives.x, -derivatives.y, 1).normalize());

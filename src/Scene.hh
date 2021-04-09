@@ -48,7 +48,7 @@ public:
     std::vector<std::shared_ptr<Light>> lights = {};
     Camera camera;
     unsigned int max_bounces;
-    double epsilon = 0.0001; //We discard intersecting object with a t inferior to epsilon
+    double epsilon = 0.000001; //We discard intersecting object with a t inferior to epsilon
     bool diffusion = true;
     bool specularity = true;
     bool reflection = true;
