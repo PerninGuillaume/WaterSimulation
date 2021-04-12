@@ -249,10 +249,36 @@ void create_montain_in_scene(Scene& scene) {
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
-  std::vector<Point3> points = {{10,-7.68,0}, {10, -7.68, 4.90}, {10, 7.68, 4.90}, {10, 7.68, 0}};
+  std::vector<Point3> points = {{7,-7.68,0}, {7, -7.68, 4.90}, {7, 7.68, 4.90}, {7, 7.68, 0}};
   std::vector<Vector3> normals = {{-1,0,0}, {-1,0,0}, {-1,0,0}, {-1,0,0}};
   std::vector<Point3> textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
   triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename_montain), faceIndex, vertexIndices
+               , points, normals, textureCoordinates);
+}
+
+void create_sky_in_scene(Scene& scene) {
+
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
+  const std::string filename = "images/blue_sky.ppm";
+
+  std::vector<int> faceIndex = {4};
+  std::vector<int> vertexIndices = {0,1,2,3};
+  std::vector<Point3> points = {{10,-7.68,0}, {10, -7.68, 4.90}, {-1, -7.68, 4.90}, {-1, -7.68, 0}};
+  std::vector<Vector3> normals = {{0,1,0}, {0,1,0}, {0,1,0}, {0,1,0}};
+  std::vector<Point3> textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
+  triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
+               , points, normals, textureCoordinates);
+
+  points = {{10,7.68,0}, {10, 7.68, 4.90}, {-1, 7.68, 4.90}, {-1, 7.68, 0}};
+  normals = {{0,-1,0}, {0,-1,0}, {0,-1,0}, {0,-1,0}};
+  textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
+  triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
+               , points, normals, textureCoordinates);
+
+  points = {{10,-7.68,4.90}, {10,-7.68, 4.90}, {-1, 7.68, 4.90}, {-1, 7.68, 4.90}};
+  normals = {{0,0,-1}, {0,0,-1}, {0,0,-1}, {0,0,-1}};
+  textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
+  triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
                , points, normals, textureCoordinates);
 }
 
@@ -263,7 +289,7 @@ void create_galets_ground_in_scene(Scene& scene) {
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
-  std::vector<Point3> points = {{10,-7.68, -1}, {-1, -7.68, -1}, {-1, 7.68, -1}, {10, 7.68, -1}};
+  std::vector<Point3> points = {{10,-7.68, -3}, {-0.25, -7.68, -1}, {-0.25, 7.68, -1}, {10, 7.68, -3}};
   std::vector<Vector3> normals = {{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}};
   std::vector<Point3> textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
   triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
@@ -272,43 +298,54 @@ void create_galets_ground_in_scene(Scene& scene) {
 
 void create_water_in_scene(Scene& scene) {
 
-  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0.5, 1);
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 1, 1, 1.33);
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
-  std::vector<Point3> points = {{10,-7.68, 1}, {-1, -7.68, 1}, {-1, 7.68, 1}, {10, 7.68, 1}};
+  std::vector<Point3> points = {{10, 0, 0}, {0, 0, 0.75}, {0, 7.68, 0.75}, {10, 7.68, 0}};
   std::vector<Vector3> normals = {{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}};
   std::vector<Point3> textureCoordinates = {{0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}};
   triangleMesh(scene, std::make_shared<Uniform_Texture>(caracteristics_blue), faceIndex, vertexIndices
                , points, normals, textureCoordinates);
+  //  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 10, 10,
+  //                             std::make_shared<Uniform_Texture>(caracteristics_blue));
 }
 
-void nice_scene() {
-  Point3 center(0, 0, 1.1);
-  Point3 spotted_point(4, 0, 0);
-  Vector3 up(1, 0, 1);
-  float alpha = 45.0;
-  float beta = 45.0;
-  float zmin = 1.0; //Why changing this parameter does not affect the output image
-  Camera camera(center, spotted_point, up, alpha, beta, zmin);
+void nice_scene(Camera camera, int image_num) {
   Scene scene = Scene(camera, 5);
   scene.msaa_samples = 4;
   scene.set_epsilon(0.001);
   Caracteristics caracteristics_yellow(Pixel(255, 255, 0), 1, 0, 0);
 
-  auto light = std::make_shared<Point_Light>(Point3(2, 0, 0), 1000);
-  auto light2 = std::make_shared<Point_Light>(Point3(0, 0, 10), 500);
-  auto sphere = std::make_shared<Sphere>(std::make_shared<Procedural_Texture>(caracteristics_yellow), Point3(3,0.5,0.25), 0.25);
+  auto light = std::make_shared<Point_Light>(Point3(-0.5, 0, 4), 700);
+  auto sphere = std::make_shared<Sphere>(std::make_shared<Procedural_Texture>(caracteristics_yellow), Point3(1.5,-1,0.25), 0.25);
+  auto sphere2 = std::make_shared<Sphere>(std::make_shared<Procedural_Texture>(caracteristics_yellow), Point3(1.5,1,0.25), 0.25);
   scene.add_light(light);
-  scene.add_light(light2);
   scene.add_object(sphere);
+  scene.add_object(sphere2);
 
   create_montain_in_scene(scene);
+  create_sky_in_scene(scene);
   create_galets_ground_in_scene(scene);
   create_water_in_scene(scene);
-  std::cout << scene.raycast(Rayon(Vector3(4,0,0.98), center), scene.max_bounces);
+  //std::cout << scene.raycast(Rayon(Vector3(4,0,0.98), center), scene.max_bounces);
   Image image = scene.raycasting();
-  image.save_as_ppm("images/nice_scene.ppm");
+  image.save_as_ppm("images/nice_scene_" + std::to_string(image_num) + ".ppm");
+}
+
+void nice_scene_different_views() {
+  Point3 spotted_point(15, 0, 0);
+  Vector3 up(1, 0, 1);
+  float alpha = 45.0;
+  float beta = 45.0;
+  float zmin = 1.0; //Why changing this parameter does not affect the output image
+  int image_num = 1 ;
+  for (float f=0.2; f<4; f+=0.2) {
+    Point3 center(0, 0, f);
+    Camera camera(center, spotted_point, up, alpha, beta, zmin);
+    nice_scene(camera, image_num);
+    image_num++;
+  }
 }
 
 void displacement() {
@@ -352,7 +389,7 @@ void perlin_noise_2d() {
 
 //TODO change the two planes in refraction test
 int main() {
-  nice_scene();
+  nice_scene_different_views();
   //displacement();
   //perlin_noise_2d();
   //polygon();
