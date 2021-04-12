@@ -16,3 +16,6 @@ void triangleMesh(Scene& scene, const std::shared_ptr<Texture_Material>& texture
 void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B, const Point3& C, const Point3& D,
                              unsigned widthDivisions, unsigned heightDivisions, std::shared_ptr<Texture_Material> textureMaterial
                              , bool analytical_normals = true, bool smooth = true);
+
+void create_mesh_from_obj(Scene& scene, const std::shared_ptr<Texture_Material>& texture_material
+                          , const std::string& filename);

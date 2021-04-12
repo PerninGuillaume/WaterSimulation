@@ -194,13 +194,14 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
       result += this->specular_light(intersection_point, incident_vector, caracteristics, intersecting_object);
     }
     if (reflection && caracteristics.ks != 0) {
-      result += caracteristics.ks * this->raycast(Rayon(reflected_vector, intersection_point), bounces - 1);
+      result += 0.8 * caracteristics.ks * this->raycast(Rayon(reflected_vector, intersection_point), bounces - 1);
     }
   }
   return result;
 }
 
 Image Scene::raycasting() {
+  std::cout << "Number of objects in this scene : " << this->objects.size() << '\n';
   auto start = std::chrono::high_resolution_clock::now();
   Image image(width, height);
   auto pixels_location = this->camera.pixels_location(width, height);
