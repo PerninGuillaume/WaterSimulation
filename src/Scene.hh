@@ -30,15 +30,15 @@ public:
     bool is_hidden(const Rayon& ray, double point_to_light_norm);
 
     Pixel diffuse_light(const Point3& intersection_point, const Caracteristics& caracteristics,
-                        const std::shared_ptr<Object>& object);
+                        const std::shared_ptr<Object>& object, double u, double v);
 
     Pixel specular_light(const Point3& intersection_point, const Vector3& incident_vector,
-                         const Caracteristics& caracteristics, const std::shared_ptr<Object>& object);
+                         const Caracteristics& caracteristics, const std::shared_ptr<Object>& object, double u, double v);
 
     //This function returns the ratio of energy that is reflected, between 0 and 1
     static double fresnel(const Vector3& incident, const Vector3& normal, double index_refraction);
 
-    PointIntersection find_intersection(Rayon ray);
+    PointIntersection find_intersection(Rayon ray, double &u, double &v);
 
     Image raycasting();
 

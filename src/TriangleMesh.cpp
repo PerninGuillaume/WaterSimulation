@@ -62,7 +62,7 @@ void triangleMeshObj(Scene& scene, const std::shared_ptr<Texture_Material>& text
     , const std::vector<int> &vertexIndices, const std::vector<int> &textureIndices, const std::vector<int> &normalIndices
     , const std::vector<Point3>& points, const std::vector<Vector3> &normals, const std::vector<Point3>& textures)
 {
-  //or store a list of created triangle ?
+  //TODO simplify fonction as we know we only have triangles
   for (size_t i = 0, k = 0; i < faceIndex.size(); ++i) {
     for (int j = 0; j < faceIndex[i] - 2; ++j) {
       int index_1 = k;

@@ -52,7 +52,8 @@ bool Scene::is_hidden(const Rayon& ray, double max_t) {
     if (object->texture_material->caracteristics.index_refraction.has_value()) {
       return false; //We can reach the light eventhough we intersect with a transparent object
     }
-    std::optional<double> t = object->is_intersecting(ray);
+    double u,v;//We won't use those, just used by the function
+    std::optional<double> t = object->is_intersecting(ray, u, v);
     if (t) {
       //With t > this->epsilon, and epsilon > 0 we are sure we won't find an intersection behind ourselves
       //with t < max_t, we won't find an intersection behind a light when we want to know if we are in the shadows
@@ -68,14 +69,14 @@ bool Scene::is_hidden(const Rayon& ray, double max_t) {
 }
 
 Pixel Scene::diffuse_light(const Point3& intersection_point, const Caracteristics& caracteristics,
-                           const std::shared_ptr<Object>& object) {
+                           const std::shared_ptr<Object>& object, double u, double v) {
   Pixel diffuse_intensity(0,0,0);
   for (const auto& light : this->lights) {
     Vector3 point_to_light_vector = Vector3(intersection_point, light->origin);
     double point_to_light_norm = point_to_light_vector.norm();
     Vector3 point_to_light = point_to_light_vector.normalize();
     if (is_hidden(Rayon(point_to_light, intersection_point),  point_to_light_norm)) {continue;}
-    Vector3 normal = object->normal_at_point(intersection_point, Rayon(-point_to_light, light->origin));
+    Vector3 normal = object->normal_at_point(intersection_point, Rayon(-point_to_light, light->origin), u, v);
 
     diffuse_intensity += (caracteristics.pixel * caracteristics.kd * light->colors)
                          * normal.scalar_product(point_to_light, true);
@@ -84,14 +85,14 @@ Pixel Scene::diffuse_light(const Point3& intersection_point, const Caracteristic
 }
 
 Pixel Scene::specular_light(const Point3& intersection_point, const Vector3& incident_vector, const Caracteristics& caracteristics,
-                            const std::shared_ptr<Object>& object) {
+                            const std::shared_ptr<Object>& object, double u, double v) {
   Pixel specular_intensity(0,0,0);
   for (const auto& light : this->lights) {
     Vector3 point_to_light_vector = Vector3(intersection_point, light->origin);
     double point_to_light_norm = point_to_light_vector.norm();
     Vector3 point_to_light = point_to_light_vector.normalize();
     if (is_hidden(Rayon(point_to_light, intersection_point),  point_to_light_norm)) {continue;}
-    Vector3 normal = object->normal_at_point(intersection_point, Rayon(-point_to_light, light->origin));
+    Vector3 normal = object->normal_at_point(intersection_point, Rayon(-point_to_light, light->origin), u, v);
     Vector3 reflected_vector = reflection_vector(incident_vector, normal);
 
     specular_intensity += caracteristics.ks
@@ -128,13 +129,13 @@ double Scene::fresnel(const Vector3& incident, const Vector3& normal, double ind
 }
 
 //TODO unify the method for shadow acneing between find_intersection and is_hidden
-PointIntersection Scene::find_intersection(Rayon ray) {
+PointIntersection Scene::find_intersection(Rayon ray, double &u, double &v) {
   // for reflection and refraction instead of discarding small t, translate the origin of the ray along the ray normal
   ray.origin = ray.origin + ray.direction * epsilon;
   std::optional<double> t_min;
   std::shared_ptr<Object> intersecting_object;
   for (const auto& object : this->objects) {
-    std::optional<double> t = object->is_intersecting(ray);
+    std::optional<double> t = object->is_intersecting(ray, u, v);
     if (t) {
       //With t > this->epsilon, and epsilon > 0 we are sure we won't find an intersection behind ourselves
       if (t > this->epsilon && (!t_min || t < t_min.value())) {
@@ -151,7 +152,7 @@ PointIntersection Scene::find_intersection(Rayon ray) {
     return PointIntersection();
   }
   Point3 intersection_point = ray.origin + ray.direction * t_min.value();
-  Caracteristics caracteristics = intersecting_object->texture_at_point(intersection_point);
+  Caracteristics caracteristics = intersecting_object->texture_at_point(intersection_point, u, v);
   return PointIntersection(true, intersecting_object, intersection_point, caracteristics);
 }
 
@@ -161,7 +162,8 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
   if (bounces == 0) {
     return Pixel(0,0,0);
   }
-  PointIntersection struct_intersection = this->find_intersection(ray);
+  double u,v;
+  PointIntersection struct_intersection = this->find_intersection(ray, u, v);
   if (!struct_intersection.is_intersecting) {
     return Pixel(0, 0, 0);
   }
@@ -171,7 +173,7 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
   auto intersection_point = struct_intersection.intersection_point;
   auto intersecting_object = struct_intersection.intersecting_object;
 
-  Vector3 normal = intersecting_object->normal_at_point(intersection_point, ray);
+  Vector3 normal = intersecting_object->normal_at_point(intersection_point, ray, u, v);
   Vector3 incident_vector = (Vector3(ray.origin, intersection_point)).normalize();
   Vector3 reflected_vector = reflection_vector(incident_vector, normal);
 
@@ -188,10 +190,10 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
   }
   else {
     if (diffusion && caracteristics.kd != 0) {
-      result += this->diffuse_light(intersection_point, caracteristics, intersecting_object);
+      result += this->diffuse_light(intersection_point, caracteristics, intersecting_object, u, v);
     }
     if (specularity && caracteristics.ks != 0) {
-      result += this->specular_light(intersection_point, incident_vector, caracteristics, intersecting_object);
+      result += this->specular_light(intersection_point, incident_vector, caracteristics, intersecting_object, u, v);
     }
     if (reflection && caracteristics.ks != 0) {
       result += 0.8 * caracteristics.ks * this->raycast(Rayon(reflected_vector, intersection_point), bounces - 1);
@@ -211,7 +213,7 @@ Image Scene::raycasting() {
   int loading = 0;
   const size_t nb_pixels = height * width;
   int displayed = 0;
-  //#pragma omp parallel for ordered
+  #pragma omp parallel for ordered
   for (size_t index_pixel = 0; index_pixel < nb_pixels; ++index_pixel) {
     if (this->msaa_samples == 1) {
       Rayon ray(Vector3(this->camera.center, pixels_location[index_pixel]).normalize(), this->camera.center);

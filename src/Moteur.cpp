@@ -73,9 +73,9 @@ void triangle_on_plane() {
 }
 
 void smooth_triangle_on_plane() {
-  Scene scene = Scene(create_standard_camera(), 5);
+  Scene scene = Scene(create_standard_camera(), 1);
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
-  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0.4, 1);
+  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0, 0);
   Point3 A(2,1,-0.5);//All those points are at the boundaries of the center_sphere of radius 1
   Point3 B(2,0,0.5);
   Point3 C(2,-1,-0.5);
