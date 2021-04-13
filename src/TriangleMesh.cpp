@@ -58,27 +58,24 @@ void triangleMesh(Scene& scene, const std::shared_ptr<Texture_Material>& texture
 }
 
 //Function for mesh imported from obj files
-void triangleMeshObj(Scene& scene, const std::shared_ptr<Texture_Material>& texture_material, const std::vector<int> &faceIndex
+void triangleMeshObj(Scene& scene, const std::shared_ptr<Texture_Material>& texture_material, int nb_triangles
     , const std::vector<int> &vertexIndices, const std::vector<int> &textureIndices, const std::vector<int> &normalIndices
     , const std::vector<Point3>& points, const std::vector<Vector3> &normals, const std::vector<Point3>& textures)
 {
   //TODO simplify fonction as we know we only have triangles
-  for (size_t i = 0, k = 0; i < faceIndex.size(); ++i) {
-    for (int j = 0; j < faceIndex[i] - 2; ++j) {
+  for (int i = 0, k = 0; i < nb_triangles; ++i) {
       int index_1 = k;
-      int index_2 = k + j + 1;
-      int index_3 = k + j + 2;
+      int index_2 = k + 1;
+      int index_3 = k + 2;
       scene.add_object(std::make_shared<SmoothTriangle>(texture_material
           , points[vertexIndices[index_1]], points[vertexIndices[index_2]], points[vertexIndices[index_3]]
           , normals[normalIndices[index_1]], normals[normalIndices[index_2]], normals[normalIndices[index_3]]
           , textures[textureIndices[index_1]], textures[textureIndices[index_2]], textures[textureIndices[index_3]]));
-    }
-    k += faceIndex[i];
+    k += 3;
   }
 }
 
 void create_mesh_from_obj(Scene& scene, const std::shared_ptr<Texture_Material>& texture_material, const std::string& filename) {
-  std::vector<int> faceIndex;
   std::vector<int> vertexIndices;
   std::vector<int> textureIndices;
   std::vector<int> normalIndices;
@@ -90,6 +87,7 @@ void create_mesh_from_obj(Scene& scene, const std::shared_ptr<Texture_Material>&
     throw std::runtime_error("File does not exist");
   }
   std::string line;
+  int nb_triangles = 0;
   while (std::getline(in, line)) {
     std::string type_line = line.substr(0,2);
     if (type_line == "v ") {
@@ -121,12 +119,11 @@ void create_mesh_from_obj(Scene& scene, const std::shared_ptr<Texture_Material>&
      vertexIndices.insert(vertexIndices.end(), {vertex_index_1 - 1, vertex_index_2 - 1, vertex_index_3 - 1});
      textureIndices.insert(textureIndices.end(), {texture_index_1 - 1, texture_index_2 - 1, texture_index_3 - 1});
      normalIndices.insert(normalIndices.end(), {normal_index_1 - 1, normal_index_2 - 1, normal_index_3 - 1});
-     faceIndex.emplace_back(3);
-
+     ++nb_triangles;
    }
 
   }
-  triangleMeshObj(scene, texture_material, faceIndex, vertexIndices, textureIndices, normalIndices
+  triangleMeshObj(scene, texture_material, nb_triangles, vertexIndices, textureIndices, normalIndices
                   , points, normals, textureCoordinates);
 
 }
