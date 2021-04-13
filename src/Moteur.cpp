@@ -6,7 +6,7 @@ Camera create_standard_camera() {
   Point3 center(0,0,0);
   Point3 spotted_point(2,0,0);
   Vector3 up(0,0,1);
-  float alpha = 45.0;
+  float alpha = 60.64;//For a ratio of 16/9
   float beta = 45.0;
   float zmin = 1.0; //Why changing this parameter does not affect the output image
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
@@ -73,13 +73,13 @@ void triangle_on_plane() {
 }
 
 void smooth_triangle_on_plane() {
-  Scene scene = Scene(create_standard_camera(), 5);
+  Scene scene = Scene(create_standard_camera(), 1);
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
-  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0.4, 1);
-  Point3 A(2,1,0);//All those points are at the boundaries of the center_sphere of radius 1
-  Point3 B(2,0,1);
-  Point3 C(2,-1,0);
-  Point3 center_sphere(3,0,0);
+  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0, 0);
+  Point3 A(2,1,-0.5);//All those points are at the boundaries of the center_sphere of radius 1
+  Point3 B(2,0,0.5);
+  Point3 C(2,-1,-0.5);
+  Point3 center_sphere(3,0,-0.5);
   auto triangle1 = std::make_shared<SmoothTriangle>(std::make_shared<Uniform_Texture>(caracteristics_green),
                                               A, B, C, A - center_sphere, B - center_sphere, C - center_sphere);
   auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(5,0,0), Vector3(-1,0,0));
@@ -94,6 +94,7 @@ void smooth_triangle_on_plane() {
 
 void two_spheres_on_plane() {
   Scene scene = Scene(create_standard_camera(), 5);
+  scene.msaa_samples = 4;
   Caracteristics caracteristics_blue(Pixel(0, 0, 70), 0.1, 0.5, 1);
   Caracteristics caracteristics_yellow(Pixel(255, 255, 0), 0.6, 0.3, 100);
   Caracteristics caracteristics_grey(Pixel(127, 128, 137), 0.2, 0.3, 1);
@@ -112,33 +113,35 @@ void two_spheres_on_plane() {
 
 
 void sphere_anti_aliased() {
-    Scene scene = Scene(create_standard_camera(), 4);
-    scene.msaa_samples = 4;
-    Caracteristics caracteristics_blue(Pixel(0, 0, 70), 0.1, 0.5, 1);
-    Caracteristics caracteristics_yellow(Pixel(255, 255, 0), 0.6, 0.3, 2);
-    Caracteristics caracteristics_grey(Pixel(127, 128, 137), 0.2, 0.3, 1);
+  Scene scene = Scene(create_standard_camera(), 1);
+  scene.msaa_samples = 4;
+  Caracteristics caracteristics_blue(Pixel(0, 0, 70), 0.1, 0.5, 1);
+  Caracteristics caracteristics_yellow(Pixel(255, 255, 0), 0.6, 0.3, 2);
+  Caracteristics caracteristics_grey(Pixel(127, 128, 137), 0.2, 0.3, 1);
 
-    auto sphere1 = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_grey), Point3(4,1,2), 1);
-    auto sphere2 = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_yellow), Point3(4,-1,2), 1);
-    auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(5,0,0), Vector3(-1,0,0));
-    scene.add_object({sphere2, sphere1, plane});
-    auto light = std::make_shared<Point_Light>(Point3(2,0,0), 800);
-    scene.add_light(light);
-
-
-    Image image = scene.raycasting();
-    image.save_as_ppm("images/anti_aliased.ppm");
+  auto sphere1 = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_grey), Point3(4,1,2), 1);
+  auto sphere2 = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_yellow), Point3(4,-1,2), 1);
+  auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(5,0,0), Vector3(-1,0,0));
+  scene.add_object({sphere2, sphere1, plane});
+  auto light = std::make_shared<Point_Light>(Point3(2,0,0), 800);
+  scene.add_light(light);
+  //TODO why is there a blue line on top of the spheres; maybe because of reflection
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-1,3.13)), scene.camera.center), 2) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-1,3.24)), scene.camera.center), 2) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-1,3.4)), scene.camera.center), 2) << '\n';
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/anti_aliased.ppm");
 }
 
 void simple_plane() {
-    Scene scene = Scene(create_standard_camera(), 5);
-    Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.5, 0.5, 2);
-    auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(10,0,0), Vector3(-1,0,0));
-    scene.add_object(plane);
-    auto light = std::make_shared<Point_Light>(Point3(5,0,0), 10);
-    scene.add_light(light);
-    Image image = scene.raycasting();
-    image.save_as_ppm("images/blue_plane.ppm");
+  Scene scene = Scene(create_standard_camera(), 5);
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.5, 0.5, 2);
+  auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(10,0,0), Vector3(-1,0,0));
+  scene.add_object(plane);
+  auto light = std::make_shared<Point_Light>(Point3(5,0,0), 10);
+  scene.add_light(light);
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/blue_plane.ppm");
 }
 //TODO put two planes intersecting to see the refraction
 void refraction_sphere_on_plane() {
@@ -151,7 +154,6 @@ void refraction_sphere_on_plane() {
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
   Scene scene = Scene(camera, 5);
   scene.msaa_samples = 4;
-  scene.set_epsilon(0.001);
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.1, 0.3, 1);
   Caracteristics caracteristics_red(Pixel(255, 0, 0), 0.1, 0.3, 1);
@@ -181,7 +183,7 @@ void blob_test() {
   scene.msaa_samples = 1;
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0, 1);
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
-  Blob blob = Blob(Point3(4.5,0.2,-0.3), 12, 0.5, std::vector<Point3>{Point3(4,1.2,1), Point3(4, -1.2, 1)}, 1, std::make_shared<Uniform_Texture>(caracteristics_green));
+  Blob blob = Blob(Point3(4.5,0.2,-0.3), 12, 0.1, std::vector<Point3>{Point3(4,1.2,1), Point3(4, -1.2, 1)}, 1, std::make_shared<Uniform_Texture>(caracteristics_green));
 
   blob.marching_cubes(scene);
   std::cout << scene.objects.size() << '\n';
@@ -226,7 +228,6 @@ void polygon() {
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
   Scene scene = Scene(camera, 5);
   scene.msaa_samples = 4;
-  scene.set_epsilon(0.001);
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.1, 0.3, 1);
   Caracteristics caracteristics_red(Pixel(255, 0, 0), 0.1, 0.3, 1);
   auto ground = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_green),
@@ -356,16 +357,32 @@ void displacement() {
   float beta = 45.0;
   float zmin = 1.0; //Why changing this parameter does not affect the output image
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
-  Scene scene = Scene(camera, 1);
-  Point3 A(2, -1, -1);
-  Point3 B(2, 1, -1);
-  Point3 C(4,1,-1);
-  Point3 D(4, -1, -1);
-  Caracteristics caracteristics_blue(Pixel(0, 0, 120), 0.4, 0, 0);
+  Scene scene = Scene(camera, 2);
+  Point3 A(2, -3, -1);
+  Point3 B(2, 3, -1);
+  Point3 C(4,3,-1);
+  Point3 D(4, -3, -1);
+  Caracteristics caracteristics_blue(Pixel(120, 120, 120), 0.8, 0.4, 0);
+  Caracteristics caracteristics_green(Pixel(0, 0, 120), 0.8, 0.8, 0);
   auto texture = std::make_shared<Uniform_Texture>(caracteristics_blue);
-  rectangle_displaced_by_noise(scene, A, B, C , D, 10, 10, texture);
-  auto light = std::make_shared<Point_Light>(Point3(2, 0, 3), 1000);
+  rectangle_displaced_by_noise(scene, A, B, C , D, 4, 4, texture, true, false);
+
+  auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_green), Point3(0,0,-2), Vector3(0,0,1));
+  auto sphere = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_green), Point3(3.5,0,-1), 0.5);
+  //auto triangle = std::make_shared<SmoothTriangle>(texture, Point3(2,0,1), Point3(4,3,1), Point3(4,0,1),
+  //                                                 Vector3(-0.379586,0.925,0), Vector3(0.3431,0.9392,0), Vector3(0.492,0.8765,0));
+  //scene.add_object(triangle);
+  auto light = std::make_shared<Point_Light>(Point3(3, 0, 3), 1000);
   scene.add_light(light);
+  //scene.add_object(sphere);
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(3,1.8,-1)), scene.camera.center), 2) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(3,1.9,-1)), scene.camera.center), 2) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(3,2.14,-1)), scene.camera.center), 2) << '\n';
+  //for (double i = 0; i < 0.5; i += 0.01) {
+  //  Point3 arrival(3,1.8 + i, -1);
+  //  std::cout << arrival << " : ";
+  //  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, arrival), scene.camera.center), 2) << '\n';
+  //}
   Image image = scene.raycasting();
   image.save_as_ppm("images/displacement.ppm");
 }
@@ -387,19 +404,74 @@ void perlin_noise_2d() {
   image.save_as_ppm("images/noise.ppm");
 }
 
+void displacement_texture() {
+  Point3 center(0, 0, 2);
+  Point3 spotted_point(4, 0, 0);
+  Vector3 up(0, 0, 1);
+  float alpha = 45.0;
+  float beta = 45.0;
+  float zmin = 1.0; //Why changing this parameter does not affect the output image
+  Camera camera(center, spotted_point, up, alpha, beta, zmin);
+  Scene scene = Scene(camera, 5);
+  scene.msaa_samples = 4;
+  Point3 A(2, -3, -1);
+  Point3 B(2, 3, -1);
+  Point3 C(4,3,-1);
+  Point3 D(4, -3, -1);
+  Caracteristics caracteristics_blue(Pixel(120, 120, 120), 0.8, 0.8, 0);
+  auto texture = std::make_shared<Image_Texture>(caracteristics_blue, "images/water_texture.ppm");
+  rectangle_displaced_by_noise(scene, A, B, C , D, 4, 4, texture, true, true);
+  //auto triangle = std::make_shared<SmoothTriangle>(texture, Point3(2,0,-1.13284), Point3(4,3,-0.9516), Point3(4,0,-1.075809),
+  //                                                 Vector3(-0.379586,0.925,0), Vector3(0.3431,0.9392,0), Vector3(0.492,0.8765,0));
+  //scene.add_object(triangle);
+  auto light = std::make_shared<Point_Light>(Point3(3, 0, 3), 1000);
+  scene.add_light(light);
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(2.42,0.5,-1)), scene.camera.center), 1) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(2.41,0.5,-1)), scene.camera.center), 1) << '\n';
+  //for (double i = 0; i < 2; i += 0.01) {
+  //  Point3 arrival(4 - i,0.5, -1);
+  //  std::cout << arrival << " : ";
+  //  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, arrival), scene.camera.center), 1) << '\n';
+  //}
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/displacement_texture.ppm");
+}
+
+
+void obj() {
+  Scene scene = Scene(create_standard_camera(), 5);
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
+  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0, 1);
+  auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(0,0,-1), Vector3(0,0,1));
+  scene.add_object(plane);
+  auto light = std::make_shared<Point_Light>(Point3(2,0.5,7), 1000);
+  auto light_2 = std::make_shared<Point_Light>(Point3(2,4.5,2), 1000);
+  auto light_3 = std::make_shared<Point_Light>(Point3(2,-4.5,2), 1000);
+  scene.add_light(light);
+  scene.add_light(light_2);
+  scene.add_light(light_3);
+  auto texture = std::make_shared<Uniform_Texture>(caracteristics_green);
+  create_mesh_from_obj(scene, texture, "images/geometry/monkey.obj");
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/obj.ppm");
+}
+
+
 //TODO change the two planes in refraction test
 int main() {
-  nice_scene_different_views();
+  //nice_scene_different_views();
+  //refraction_sphere_on_plane();
+  //displacement_texture();
   //displacement();
   //perlin_noise_2d();
   //polygon();
-  //refraction_sphere_on_plane();
   //blob_test();
   //triangle_on_plane();
   //smooth_triangle_on_plane();
   //simple_plane();
   //two_spheres_on_plane();
   //sphere_anti_aliased();
+  obj();
 }
 
 

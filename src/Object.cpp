@@ -44,7 +44,7 @@ SmoothTriangle::SmoothTriangle(std::shared_ptr<Texture_Material> texture_materia
 {}
 //-----------------------------------------------SPHERE------------------------------------------------------------//
 
-std::optional<double> Sphere::is_intersecting(const Rayon& ray)
+std::optional<double> Sphere::is_intersecting(const Rayon& ray, double&, double&)
 {
     // Formulas from wikipedia, verified on paper
     double a = std::pow(ray.direction.norm(), 2.0);
@@ -69,18 +69,18 @@ std::optional<double> Sphere::is_intersecting(const Rayon& ray)
     return std::min(t0, t1);
 }
 
-Vector3 Sphere::normal_at_point(const Point3& point, const Rayon&)
+Vector3 Sphere::normal_at_point(const Point3& point, const Rayon&, double, double)
 {
     return Vector3(point.x - origin.x, point.y - origin.y, point.z - origin.z);
 }
 
-Caracteristics Sphere::texture_at_point(const Point3&) {
+Caracteristics Sphere::texture_at_point(const Point3&, double, double) {
     return texture_material->caracteristics;
 }
 
 //-----------------------------------------------PLANE--------------------------------------------------------------//
 
-std::optional<double> Plane::is_intersecting(const Rayon& ray) {
+std::optional<double> Plane::is_intersecting(const Rayon& ray, double&, double&) {
     auto scalar = ray.direction.scalar_product(normal);
     if (scalar == 0.0) {
         return std::optional<double>(); //The line could be inside the plane but I don't take into account this case
@@ -89,19 +89,19 @@ std::optional<double> Plane::is_intersecting(const Rayon& ray) {
     return tmp / scalar;
 }
 
-Vector3 Plane::normal_at_point(const Point3&, const Rayon& ray) {
+Vector3 Plane::normal_at_point(const Point3&, const Rayon& ray, double, double) {
   if (ray.direction.scalar_product(this->normal) > 0) {
     return -1.0 * this->normal;
   }
   return this->normal;
 }
 
-Caracteristics Plane::texture_at_point(const Point3&) {
+Caracteristics Plane::texture_at_point(const Point3&, double, double) {
     return texture_material->caracteristics;
 }
 
 //-----------------------------------------------TRIANGLE--------------------------------------------------------------//
-std::optional<double> Triangle::is_intersecting(const Rayon &ray) {
+std::optional<double> Triangle::is_intersecting(const Rayon &ray, double&, double&) {
   Vector3 D = ray.direction;
   Vector3 P = D.vector_product(AC);
   double determinant = P.scalar_product(AB);
@@ -149,14 +149,14 @@ std::optional<double> Triangle::is_intersecting(const Rayon& ray) {
 }
  */
 
-Vector3 Triangle::normal_at_point(const Point3&, const Rayon& ray) {
+Vector3 Triangle::normal_at_point(const Point3&, const Rayon& ray, double, double) {
   if (ray.direction.scalar_product(this->normal) > 0) {
     return -1.0 * this->normal;
   }
   return this->normal;
 }
 
-Caracteristics Triangle::texture_at_point(const Point3&) {
+Caracteristics Triangle::texture_at_point(const Point3&, double, double) {
   return texture_material->caracteristics;
 }
 
@@ -174,7 +174,7 @@ std::ostream& operator<<(std::ostream& ost, const Triangle& triangle) {
 // u = ((D * AC) . AO) / determinant or (P. AO) / determinant
 // v = ((AO * AB) . D) / determinant or (Q . D) / determinant
 // t = ((AO * AB) . AC) / determinant or (Q. AC) / determinant
-std::optional<double> SmoothTriangle::is_intersecting(const Rayon &ray) {
+std::optional<double> SmoothTriangle::is_intersecting(const Rayon &ray, double &u, double &v) {
   Vector3 D = ray.direction;
   Vector3 AC = Vector3(A, C);
   Vector3 AB = Vector3(A, B);
@@ -191,7 +191,6 @@ std::optional<double> SmoothTriangle::is_intersecting(const Rayon &ray) {
 
   Vector3 Q = AO.vector_product(AB);
   v = invDeterminant * D.scalar_product(Q);
-  w = 1.0 - u - v;
   if (v < 0 || u + v > 1) // outside of triangle
     return std::optional<double>();
 
@@ -200,7 +199,8 @@ std::optional<double> SmoothTriangle::is_intersecting(const Rayon &ray) {
 }
 
 //This function should be called only after is_intersecting has been called in order for u,v and w to be initialized
-Vector3 SmoothTriangle::normal_at_point(const Point3&, const Rayon& ray) {
+Vector3 SmoothTriangle::normal_at_point(const Point3&, const Rayon& ray, double u, double v) {
+  double w = 1.0 - u - v;
   Vector3 interpolatedVector = w * normA + u * normB + v * normC;
   interpolatedVector.normalize();
   if (ray.direction.scalar_product(interpolatedVector) > 0) {
@@ -209,8 +209,9 @@ Vector3 SmoothTriangle::normal_at_point(const Point3&, const Rayon& ray) {
   return interpolatedVector;
 }
 
-Caracteristics SmoothTriangle::texture_at_point(const Point3& point) {
+Caracteristics SmoothTriangle::texture_at_point(const Point3& point, double u, double v) {
   if (A_text_coord) {//We have texture coordinates and we compute the interpolated texture coordinate
+    double w = 1.0 - u - v;
     Point3 coordinate = A_text_coord.value() * w + B_text_coord.value() * u + C_text_coord.value() * v;
     return texture_material->caracteristics_point(coordinate);
   }

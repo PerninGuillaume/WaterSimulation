@@ -5,7 +5,8 @@
 
 Image::Image(int width, int height)
 : width(width)
-, height(height) {}
+, height(height)
+, pixels(std::vector<Pixel>(width * height)){}
 
   Image::Image(const std::string& input_filename) {
   std::ifstream file;
@@ -33,20 +34,33 @@ Image::Image(int width, int height)
   file.close();
 }
 
-unsigned char Image::compress_value(double value) {
-  return (unsigned char)(std::max(0.0, std::min(255.0, std::pow(value, 1/gamma))));
+unsigned char Image::compress_value(double max, double value) {
+  return (unsigned char)(std::pow(value / max, 1/gamma) * 255.0);
+}
+
+double image_max(const std::vector<Pixel>& pixels) {
+  double max = 0;
+  for (const auto& pixel : pixels) {
+    max = std::max(pixel.x, max);
+    max = std::max(pixel.y, max);
+    max = std::max(pixel.z, max);
+  }
+  std::cout << "max of image : " << max << "\n";
+  return max;
 }
 
 void Image::save_as_ppm(const std::string& filename) {
     std::ofstream file;
+    std::cout << "Saving " << filename << '\n';
     file.open(filename);
     file << "P6\n";
     file << width << " " << height << '\n';
     file << max_color_value << '\n';
+    double max = image_max(pixels);
     for (const auto& pixel : pixels) {
-      unsigned char r = compress_value(pixel.x);
-      unsigned char g = compress_value(pixel.y);
-      unsigned char b = compress_value(pixel.z);
+      unsigned char r = compress_value(max, pixel.x);
+      unsigned char g = compress_value(max, pixel.y);
+      unsigned char b = compress_value(max, pixel.z);
       file << r << g << b;
     }
     file.close();

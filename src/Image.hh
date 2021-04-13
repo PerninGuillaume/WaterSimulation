@@ -9,7 +9,7 @@ class Image
   Image(int width, int height);
   Image(const std::string& input_filename);
 
-  unsigned char compress_value(double value);
+  unsigned char compress_value(double max, double value);
   void save_as_ppm(const std::string& filename);
 
   int width;

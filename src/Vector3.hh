@@ -21,6 +21,7 @@ class Vector3
   Vector3& operator*=(const Vector3 &v);
 
   Vector3 operator+(const Vector3 &v) const;
+  Vector3 operator+(double t) const;
   Vector3& operator+=(const Vector3& v);
 
   Vector3 operator-(const Vector3 &v) const;
@@ -28,6 +29,7 @@ class Vector3
 
   Vector3 operator/(double t);
   Vector3& operator/=(double t);
+  bool operator==(const Vector3& v);
 
   [[nodiscard]] double norm() const;
   Vector3& normalize();
