@@ -315,7 +315,6 @@ void create_water_in_scene(Scene& scene) {
 void nice_scene(Camera camera, int image_num) {
   Scene scene = Scene(camera, 5);
   scene.msaa_samples = 4;
-  scene.set_epsilon(0.001);
   Caracteristics caracteristics_yellow(Pixel(255, 255, 0), 1, 0, 0);
 
   auto light = std::make_shared<Point_Light>(Point3(-0.5, 0, 4), 700);
@@ -450,10 +449,10 @@ void obj() {
   scene.add_light(light);
   scene.add_light(light_2);
   scene.add_light(light_3);
-  auto texture = std::make_shared<Uniform_Texture>(caracteristics_green);
-  create_mesh_from_obj(scene, texture, "images/geometry/monkey.obj");
+  auto texture = std::make_shared<Image_Texture>(caracteristics_blue, "images/geometry/TEX_island.ppm");
+  create_mesh_from_obj(scene, texture, "images/geometry/OBJ_island.obj");
   Image image = scene.raycasting();
-  image.save_as_ppm("images/obj.ppm");
+  image.save_as_ppm("images/island_2.ppm");
 }
 
 
