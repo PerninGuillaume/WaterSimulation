@@ -135,10 +135,13 @@ PointIntersection Scene::find_intersection(Rayon ray, double &u, double &v) {
   std::optional<double> t_min;
   std::shared_ptr<Object> intersecting_object;
   for (const auto& object : this->objects) {
-    std::optional<double> t = object->is_intersecting(ray, u, v);
+    double u_tmp, v_tmp;
+    std::optional<double> t = object->is_intersecting(ray, u_tmp, v_tmp);
     if (t) {
       //With t > this->epsilon, and epsilon > 0 we are sure we won't find an intersection behind ourselves
       if (t > this->epsilon && (!t_min || t < t_min.value())) {
+        u = u_tmp;
+        v = v_tmp;
         t_min = t;
         intersecting_object = object;
       }
