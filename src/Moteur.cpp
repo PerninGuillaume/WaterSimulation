@@ -334,6 +334,35 @@ void displacement_texture() {
   image.save_as_ppm("images/displacement_texture.ppm");
 }
 
+void debug() {
+  Scene scene = Scene(create_standard_camera(), 2);
+  scene.msaa_samples = 1;
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
+  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0.6, 1 );
+  auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(0,0,-1), Vector3(0,0,1));
+  scene.add_object(plane);
+  auto light = std::make_shared<Point_Light>(Point3(2,0,2), 1000);
+  auto light_2 = std::make_shared<Point_Light>(Point3(2,4.5,2), 1000);
+  auto light_3 = std::make_shared<Point_Light>(Point3(2,-4.5,2), 1000);
+  scene.add_light(light);
+  scene.add_light(light_2);
+  //scene.add_light(light_3);
+  Point3 A(3.4968,-0.309,1);
+  Point3 B(A.x, -A.y, -A.z);
+  Vector3 normB(normA.x, -normA.y, -normA.z);
+  Vector3 normC(normA.x, normA.y, -normA.z);
+  scene.add_object(triangle);
+  /*std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,0,-0.73)), scene.camera.center), 2) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,0,-1.1)), scene.camera.center), 2) << '\n';
+  for (double i = 0; i < 2; i += 0.01) {
+    Point3 arrival(4,0, 0.5 - i);
+    std::cout << arrival << " : ";
+    std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, arrival), scene.camera.center), 2) << '\n';
+  }*/
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/debug.ppm");
+}
+
 void obj() {
   Scene scene = Scene(create_standard_camera(), 2);
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
@@ -535,6 +564,7 @@ int main() {
   //muntain(create_standard_camera(), 99);
   //boat(create_standard_camera(), 99);
   circle_boat_views();
+  //debug();
 }
 
 
