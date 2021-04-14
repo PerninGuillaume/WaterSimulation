@@ -365,7 +365,7 @@ void debug() {
   image.save_as_ppm("images/debug.ppm");
 }
 
-void obj() {
+void glass() {
   Scene scene = Scene(create_standard_camera(), 5);
   scene.msaa_samples = 1;
   scene.use_vertex_normal = false;
@@ -402,7 +402,7 @@ void obj() {
 //TODO change the two planes in refraction test
 int main() {
   //refraction_sphere_on_plane();
-  displacement_texture();
+  //displacement_texture();
   //displacement();
   //perlin_noise_2d();
   //polygon();
