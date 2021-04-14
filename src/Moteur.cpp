@@ -451,7 +451,7 @@ void muntain_different_views() {
   float beta = 45.0;
   float zmin = 1.0;
   int image_num = 1;
-  for (float f=0.0; f<5; f+=0.2) {
+  for (float f=0.0; f<5; f+=0.1) {
     Point3 center(0, 0, f);
     Camera camera(center, spotted_point, up, alpha, beta, zmin);
     muntain(camera, image_num);
@@ -472,7 +472,7 @@ void create_boat_water_in_scene(Scene& scene) {
   std::vector<Vector3> normals = {{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}};
   std::vector<Point3> textureCoordinates = {{0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}};
   //triangleMesh(scene, texture, faceIndex, vertexIndices, points, normals, textureCoordinates);
-  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 50, 50, texture, false, true);
+  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 40, 40, texture, false, true);
 }
 
 void boat(Camera camera, int image_num) {
@@ -480,14 +480,22 @@ void boat(Camera camera, int image_num) {
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.5, 0, 1);
   
   //lights
-  auto light = std::make_shared<Point_Light>(Point3(2,0.5,2), 1000);
-  auto light_2 = std::make_shared<Point_Light>(Point3(2,4.5,2), 1000);
-  auto light_3 = std::make_shared<Point_Light>(Point3(2,-4.5,2), 1000);
-  auto light_4 = std::make_shared<Point_Light>(Point3(18,0,18), 1000);
-  scene.add_light(light);
+  auto light_1 = std::make_shared<Point_Light>(Point3(15,15,18), 1000);
+  auto light_2 = std::make_shared<Point_Light>(Point3(15,-15,18), 1000);
+  auto light_3 = std::make_shared<Point_Light>(Point3(-15,-15,18), 1000);
+  auto light_4 = std::make_shared<Point_Light>(Point3(-15,15,18), 1000);
+  auto light_5 = std::make_shared<Point_Light>(Point3(0,15,15), 1000);
+  auto light_6 = std::make_shared<Point_Light>(Point3(15,-0,15), 1000);
+  auto light_7 = std::make_shared<Point_Light>(Point3(0,-15,15), 1000);
+  auto light_8 = std::make_shared<Point_Light>(Point3(-15,0,15), 1000);
+  scene.add_light(light_1);
   scene.add_light(light_2);
   scene.add_light(light_3);
   scene.add_light(light_4);
+  scene.add_light(light_5);
+  scene.add_light(light_6);
+  scene.add_light(light_7);
+  scene.add_light(light_8);
 
   //sky, water and muntain
   create_sky_in_scene(scene);
@@ -508,7 +516,7 @@ void circle_boat_views() {
   float beta = 45.0;
   float zmin = 1.0;
   int image_num = 1;
-  for (float angle=0.0; angle<PI; angle+=0.1) {
+  for (float angle=0.0; angle < PI * 2; angle+=0.2) {
     Point3 center(cos(angle) * circle_radius, sin(angle) * circle_radius, camera_z);
     Camera camera(center, spotted_point, up, alpha, beta, zmin);
     boat(camera, image_num);
@@ -533,8 +541,17 @@ int main() {
   //obj();
   //muntain_different_views();
   //muntain(create_standard_camera(), 99);
-  //boat(create_standard_camera(), 99);
-  circle_boat_views();
+  Point3 spotted_point(0,0,0);
+  Vector3 up(0,0,1);
+  float circle_radius = 18;
+  float camera_z = 4;
+  float alpha = 60.64; //For a ratio of 16/9
+  float beta = 45.0;
+  float zmin = 1.0;
+  Point3 center(cos(PI * 3/4) * circle_radius, sin(PI * 3/4) * circle_radius, camera_z);
+  Camera camera(center, spotted_point, up, alpha, beta, zmin);
+  boat(camera, 99);
+  //circle_boat_views();
 }
 
 
