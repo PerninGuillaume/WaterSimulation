@@ -54,6 +54,7 @@ public:
     bool reflection = true;
     bool shadow = true;
     bool refraction = true;
+    bool use_vertex_normal = false;
     int msaa_samples = 4;
     int width = 800;
     int height = 450;
