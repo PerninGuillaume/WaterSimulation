@@ -331,28 +331,60 @@ void displacement_texture() {
   image.save_as_ppm("images/displacement_texture.ppm");
 }
 
-
-void obj() {
-  Scene scene = Scene(create_standard_camera(), 1);
+void debug() {
+  Scene scene = Scene(create_standard_camera(), 2);
+  scene.msaa_samples = 1;
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
-  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0, 1);
+  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0.6, 1 );
   auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(0,0,-1), Vector3(0,0,1));
   scene.add_object(plane);
-  auto light = std::make_shared<Point_Light>(Point3(2,0.5,2), 1000);
+  auto light = std::make_shared<Point_Light>(Point3(2,0,2), 1000);
   auto light_2 = std::make_shared<Point_Light>(Point3(2,4.5,2), 1000);
   auto light_3 = std::make_shared<Point_Light>(Point3(2,-4.5,2), 1000);
   scene.add_light(light);
-  //scene.add_light(light_2);
+  scene.add_light(light_2);
   //scene.add_light(light_3);
+  Point3 A(3.4968,-0.309,1);
+  Point3 B(A.x, -A.y, -A.z);
+  Point3 C(A.x, A.y, -A.z);
+  Vector3 normA(-0.727,-0.236,0.643);
+  Vector3 normB(normA.x, -normA.y, -normA.z);
+  Vector3 normC(normA.x, normA.y, -normA.z);
   auto texture = std::make_shared<Uniform_Texture>(caracteristics_green);
-  create_mesh_from_obj(scene, texture, "images/geometry/smooth_cylinder.obj");
-  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-0.23,0.75)), scene.camera.center), 1) << '\n';
-  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-0.24,0.75)), scene.camera.center), 1) << '\n';
+  auto triangle = std::make_shared<SmoothTriangle>(texture, A, B, C, normA, normB, normC);
+  scene.add_object(triangle);
+  /*std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,0,-0.73)), scene.camera.center), 2) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,0,-1.1)), scene.camera.center), 2) << '\n';
   for (double i = 0; i < 2; i += 0.01) {
     Point3 arrival(4,0, 0.5 - i);
     std::cout << arrival << " : ";
-    std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, arrival), scene.camera.center), 1) << '\n';
-  }
+    std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, arrival), scene.camera.center), 2) << '\n';
+  }*/
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/debug.ppm");
+}
+
+void obj() {
+  Scene scene = Scene(create_standard_camera(), 2);
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
+  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0.6, 1 );
+  auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(0,0,-1), Vector3(0,0,1));
+  scene.add_object(plane);
+  auto light = std::make_shared<Point_Light>(Point3(2,0,2), 1000);
+  auto light_2 = std::make_shared<Point_Light>(Point3(2,4.5,2), 1000);
+  auto light_3 = std::make_shared<Point_Light>(Point3(2,-4.5,2), 1000);
+  scene.add_light(light);
+  scene.add_light(light_2);
+  //scene.add_light(light_3);
+  auto texture = std::make_shared<Uniform_Texture>(caracteristics_green);
+  create_mesh_from_obj(scene, texture, "images/geometry/smooth_cylinder.obj");
+  /*std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,0,-0.73)), scene.camera.center), 2) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,0,-1.01)), scene.camera.center), 2) << '\n';
+  for (double i = 0; i < 2; i += 0.01) {
+    Point3 arrival(4,0, 0.5 - i);
+    std::cout << arrival << " : ";
+    std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, arrival), scene.camera.center), 2) << '\n';
+  }*/
   Image image = scene.raycasting();
   image.save_as_ppm("images/obj.ppm");
   //Y forward Z up triangulisation
@@ -360,7 +392,7 @@ void obj() {
 
 //TODO change the two planes in refraction test
 int main() {
-  //refraction_sphere_on_plane();
+  refraction_sphere_on_plane();
   //displacement_texture();
   //displacement();
   //perlin_noise_2d();
@@ -371,7 +403,8 @@ int main() {
   //simple_plane();
   //two_spheres_on_plane();
   //sphere_anti_aliased();
-  obj();
+  //obj();
+  //debug();
 }
 
 

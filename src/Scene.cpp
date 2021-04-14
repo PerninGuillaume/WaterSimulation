@@ -42,30 +42,31 @@ Scene& Scene::add_light(const std::shared_ptr<Light>& light) {
   return *this;
 }
 
-bool Scene::is_hidden(const Rayon& ray, double max_t) {
+bool Scene::is_hidden(Rayon ray, double max_t) {
+  ray.origin = ray.origin + ray.direction * epsilon;
   if (!shadow) {
     return false;
   }
 
   std::shared_ptr<Object> intersecting_object;
-  return std::any_of(this->objects.begin(), this->objects.end(), [this, ray, max_t](auto object) {
+  for (const auto& object : objects) {
     if (object->texture_material->caracteristics.index_refraction.has_value()) {
-      return false; //We can reach the light eventhough we intersect with a transparent object
+      continue; //We can reach the light eventhough we intersect with a transparent object
     }
-    double u,v;//We won't use those, just used by the function
+    double u, v;//We won't use those, just used by the function
     std::optional<double> t = object->is_intersecting(ray, u, v);
     if (t) {
       //With t > this->epsilon, and epsilon > 0 we are sure we won't find an intersection behind ourselves
       //with t < max_t, we won't find an intersection behind a light when we want to know if we are in the shadows
       if (t > this->epsilon) {
         if (t > max_t - this->epsilon) {
-          return false;
+          continue;
         }
         return true;
       }
     }
-    return false;
-  });
+  }
+  return false;
 }
 
 Pixel Scene::diffuse_light(const Point3& intersection_point, const Caracteristics& caracteristics,
@@ -76,7 +77,7 @@ Pixel Scene::diffuse_light(const Point3& intersection_point, const Caracteristic
     double point_to_light_norm = point_to_light_vector.norm();
     Vector3 point_to_light = point_to_light_vector.normalize();
     if (is_hidden(Rayon(point_to_light, intersection_point),  point_to_light_norm)) {continue;}
-    Vector3 normal = object->normal_at_point(intersection_point, Rayon(-point_to_light, light->origin), u, v);
+    Vector3 normal = object->normal_at_point(intersection_point, u, v, true);
 
     diffuse_intensity += (caracteristics.pixel * caracteristics.kd * light->colors)
                          * normal.scalar_product(point_to_light, true);
@@ -92,7 +93,7 @@ Pixel Scene::specular_light(const Point3& intersection_point, const Vector3& inc
     double point_to_light_norm = point_to_light_vector.norm();
     Vector3 point_to_light = point_to_light_vector.normalize();
     if (is_hidden(Rayon(point_to_light, intersection_point),  point_to_light_norm)) {continue;}
-    Vector3 normal = object->normal_at_point(intersection_point, Rayon(-point_to_light, light->origin), u, v);
+    Vector3 normal = object->normal_at_point(intersection_point, u, v, true);
     Vector3 reflected_vector = reflection_vector(incident_vector, normal);
 
     specular_intensity += caracteristics.ks
@@ -176,7 +177,9 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
   auto intersection_point = struct_intersection.intersection_point;
   auto intersecting_object = struct_intersection.intersecting_object;
 
-  Vector3 normal = intersecting_object->normal_at_point(intersection_point, ray, u, v);
+  //TODO see if this works : we take the surface normal instead of the vertex normal here to avoid issue
+  //such as a reflection going behind an object because of smooth triangle normals that act as a sphere
+  Vector3 normal = intersecting_object->normal_at_point(intersection_point, u, v, false);
   Vector3 incident_vector = (Vector3(ray.origin, intersection_point)).normalize();
   Vector3 reflected_vector = reflection_vector(incident_vector, normal);
 
