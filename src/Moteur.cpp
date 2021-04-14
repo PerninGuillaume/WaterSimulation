@@ -117,7 +117,7 @@ void two_spheres_on_plane() {
 
 void sphere_anti_aliased() {
   Scene scene = Scene(create_standard_camera(), 1);
-  scene.msaa_samples = 4;
+  scene.msaa_samples = 16;
   Caracteristics caracteristics_blue(Pixel(0, 0, 70), 0.1, 0.5, 1);
   Caracteristics caracteristics_yellow(Pixel(255, 255, 0), 0.6, 0.3, 2);
   Caracteristics caracteristics_grey(Pixel(127, 128, 137), 0.2, 0.3, 1);
@@ -558,7 +558,7 @@ int main() {
   //smooth_triangle_on_plane();
   //simple_plane();
   //two_spheres_on_plane();
-  //sphere_anti_aliased();
+  sphere_anti_aliased();
   //obj();
   //muntain_different_views();
   //muntain(create_standard_camera(), 99);

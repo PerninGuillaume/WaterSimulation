@@ -79,7 +79,7 @@ Pixel Scene::diffuse_light(const Point3& intersection_point, const Caracteristic
     if (is_hidden(Rayon(point_to_light, intersection_point),  point_to_light_norm)) {continue;}
     Vector3 normal = object->normal_at_point(intersection_point, u, v, true);
 
-    diffuse_intensity += (caracteristics.pixel * caracteristics.kd * light->colors)
+    diffuse_intensity += (caracteristics.pixel * caracteristics.kd * light->get_intensity(intersection_point))
                          * normal.scalar_product(point_to_light, true);
   }
   return diffuse_intensity;
@@ -97,8 +97,8 @@ Pixel Scene::specular_light(const Point3& intersection_point, const Vector3& inc
     Vector3 reflected_vector = reflection_vector(incident_vector, normal);
 
     specular_intensity += caracteristics.ks
-                          * std::pow(reflected_vector.scalar_product(point_to_light, true), caracteristics.ns) * light->colors;
-    //TODO try to remove this, added a 10 times coefficient otherwise we did not see the specular light
+                          * std::pow(reflected_vector.scalar_product(point_to_light, true), caracteristics.ns)
+                          * light->get_intensity(intersection_point);
   }
   return specular_intensity;
 }
@@ -216,6 +216,11 @@ Image Scene::raycasting() {
   std::random_device rd; // obtain a random number from hardware
   std::mt19937 gen(rd()); // seed the generator
   std::uniform_real_distribution<> distr(-0.5, 0.5); // define the range
+  //We compute one and for all the random anti aliased samples instead of every loop
+  std::vector<double> anti_aliased_samples;
+  for (int i = 0; i < this->msaa_samples * 2; ++i) {
+    anti_aliased_samples.emplace_back(distr(gen));
+  }
   int loading = 0;
   const size_t nb_pixels = height * width;
   int displayed = 0;
@@ -227,8 +232,9 @@ Image Scene::raycasting() {
       image.pixels[index_pixel] = pixel;
     } else {
       double red = 0.0, green = 0.0, blue = 0.0;
-      for (int i = 0; i < this->msaa_samples; ++i) {
-        auto random_location = pixels_location[index_pixel] + distr(gen) * this->camera.unit_x_vector + distr(gen) * this->camera.unit_y_vector;
+      for (int i = 0; i < this->msaa_samples * 2; i += 2) {
+        auto random_location = pixels_location[index_pixel] + anti_aliased_samples[i] * this->camera.unit_x_vector
+            + anti_aliased_samples[i + 1] * this->camera.unit_y_vector;
         Rayon ray(Vector3(this->camera.center, random_location).normalize(), this->camera.center);
         auto pixel = this->raycast(ray, this->max_bounces);
         red += pixel.x;
