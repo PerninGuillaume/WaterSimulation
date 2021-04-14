@@ -179,7 +179,7 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
 
   //TODO see if this works : we take the surface normal instead of the vertex normal here to avoid issue
   //such as a reflection going behind an object because of smooth triangle normals that act as a sphere
-  Vector3 normal = intersecting_object->normal_at_point(intersection_point, u, v, false);
+  Vector3 normal = intersecting_object->normal_at_point(intersection_point, u, v, use_vertex_normal);
   Vector3 incident_vector = (Vector3(ray.origin, intersection_point)).normalize();
   Vector3 reflected_vector = reflection_vector(incident_vector, normal);
 

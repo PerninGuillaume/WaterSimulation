@@ -72,7 +72,7 @@ std::optional<double> Sphere::is_intersecting(const Rayon& ray, double&, double&
 
 Vector3 Sphere::normal_at_point(const Point3& point, double, double, bool)
 {
-    return Vector3(point.x - origin.x, point.y - origin.y, point.z - origin.z);
+    return Vector3(point.x - origin.x, point.y - origin.y, point.z - origin.z).normalize();
 }
 
 Caracteristics Sphere::texture_at_point(const Point3&, double, double) {
