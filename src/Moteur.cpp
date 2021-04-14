@@ -350,9 +350,15 @@ void debug() {
   //scene.add_light(light_3);
   Point3 A(3.4968,-0.309,1);
   Point3 B(A.x, -A.y, -A.z);
+  Point3 C(A.x, A.y, -A.z);
+  Vector3 normA(-0.727,-0.236,0.643);
   Vector3 normB(normA.x, -normA.y, -normA.z);
   Vector3 normC(normA.x, normA.y, -normA.z);
+  auto texture = std::make_shared<Uniform_Texture>(caracteristics_green);
+  auto triangle = std::make_shared<SmoothTriangle>(texture, A, B, C, normA, normB, normC);
   scene.add_object(triangle);
+  auto texture = std::make_shared<Uniform_Texture>(caracteristics_green);
+  auto triangle = std::make_shared<SmoothTriangle>(texture, A, B, C, normA, normB, normC);
   /*std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,0,-0.73)), scene.camera.center), 2) << '\n';
   std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,0,-1.1)), scene.camera.center), 2) << '\n';
   for (double i = 0; i < 2; i += 0.01) {
@@ -554,6 +560,10 @@ void circle_boat_views() {
   }
 }
 
+void lake() {
+
+}
+
 //TODO change the two planes in refraction test
 int main() {
   //nice_scene_different_views();
@@ -570,9 +580,9 @@ int main() {
   //sphere_anti_aliased();
   //obj();
   //muntain_different_views();
-  //muntain(create_standard_camera(), 99);
+  muntain(create_standard_camera(), 99);
   //boat(create_standard_camera(), 99);
-  circle_boat_views();
+  //circle_boat_views();
   //debug();
 }
 
