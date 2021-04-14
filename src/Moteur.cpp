@@ -3,8 +3,8 @@
 #include <iostream>
 
 Camera create_standard_camera() {
-  Point3 center(0,0,0);
-  Point3 spotted_point(2,0,0);
+  Point3 center(0,0,5);
+  Point3 spotted_point(10,0,0);
   Vector3 up(0,0,1);
   float alpha = 60.64;//For a ratio of 16/9
   float beta = 45.0;
@@ -260,24 +260,42 @@ void create_montain_in_scene(Scene& scene) {
 void create_sky_in_scene(Scene& scene) {
 
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
-  const std::string filename = "images/blue_sky.ppm";
+  const std::string filename = "images/sky.ppm";
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
-  std::vector<Point3> points = {{10,-7.68,0}, {10, -7.68, 4.90}, {-1, -7.68, 4.90}, {-1, -7.68, 0}};
+  std::vector<Point3> points = {{20,-20,-20}, {20, -20, 20}, {-20, -20, 20}, {-20, -20, -20}};
   std::vector<Vector3> normals = {{0,1,0}, {0,1,0}, {0,1,0}, {0,1,0}};
   std::vector<Point3> textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
   triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
                , points, normals, textureCoordinates);
 
-  points = {{10,7.68,0}, {10, 7.68, 4.90}, {-1, 7.68, 4.90}, {-1, 7.68, 0}};
+  points = {{20,20,-20}, {20, 20, 20}, {-20, 20, 20}, {-20, 20, -20}};
   normals = {{0,-1,0}, {0,-1,0}, {0,-1,0}, {0,-1,0}};
   textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
   triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
                , points, normals, textureCoordinates);
 
-  points = {{10,-7.68,4.90}, {10,-7.68, 4.90}, {-1, 7.68, 4.90}, {-1, 7.68, 4.90}};
+  points = {{20,-20,20}, {20,-20, 20}, {-20, 20, 20}, {-20, 20, 20}};
   normals = {{0,0,-1}, {0,0,-1}, {0,0,-1}, {0,0,-1}};
+  textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
+  triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
+               , points, normals, textureCoordinates);
+
+  points = {{20,-20,-20}, {20,-20, -20}, {-20, 20, -20}, {-20, 20, -20}};
+  normals = {{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}};
+  textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
+  triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
+               , points, normals, textureCoordinates);
+
+  points = {{20,-20,-20}, {20, -20, 20}, {20, 20, 20}, {20, 20, -20}};
+  normals = {{-1,0,0}, {-1,0,0}, {-1,0,0}, {-1,0,0}};
+  textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
+  triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
+               , points, normals, textureCoordinates);
+
+  points = {{-20,-20,-20}, {-0, -20, 20}, {-0, 20, 20}, {-20, 20, -20}};
+  normals = {{1,0,0}, {1,0,0}, {1,0,0}, {1,0,0}};
   textureCoordinates = {{0,1,0}, {0,0,0}, {1,0,0}, {1,1,0}};
   triangleMesh(scene, std::make_shared<Image_Texture>(caracteristics_blue, filename), faceIndex, vertexIndices
                , points, normals, textureCoordinates);
@@ -299,17 +317,18 @@ void create_galets_ground_in_scene(Scene& scene) {
 
 void create_water_in_scene(Scene& scene) {
 
-  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 1, 1, 1.33);
+  //Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1, 1.33);
+  //auto texture = std::make_shared<Uniform_Texture>(caracteristics_blue)
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0.8, 0);
+  auto texture = std::make_shared<Image_Texture>(caracteristics_blue, "images/water_texture.ppm");
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
-  std::vector<Point3> points = {{10, 0, 0}, {0, 0, 0.75}, {0, 7.68, 0.75}, {10, 7.68, 0}};
+  std::vector<Point3> points = {{15, -15, 0.5}, {0, -15, 0.5}, {0, 15, 0.5}, {15, 15, 0.5}};
   std::vector<Vector3> normals = {{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}};
   std::vector<Point3> textureCoordinates = {{0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}};
-  triangleMesh(scene, std::make_shared<Uniform_Texture>(caracteristics_blue), faceIndex, vertexIndices
-               , points, normals, textureCoordinates);
-  //  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 10, 10,
-  //                             std::make_shared<Uniform_Texture>(caracteristics_blue));
+  //triangleMesh(scene, texture, faceIndex, vertexIndices, points, normals, textureCoordinates);
+  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 20, 20, texture);
 }
 
 void nice_scene(Camera camera, int image_num) {
@@ -449,8 +468,8 @@ void obj() {
   scene.add_light(light);
   //scene.add_light(light_2);
   //scene.add_light(light_3);
-  auto texture = std::make_shared<Uniform_Texture>(caracteristics_green);
-  create_mesh_from_obj(scene, texture, "images/geometry/smooth_cylinder.obj");
+  auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/geometry/TEX_test.ppm");
+  create_mesh_from_obj(scene, texture, "images/geometry/OBJ_island.obj");
   std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-0.23,0.75)), scene.camera.center), 1) << '\n';
   std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-0.24,0.75)), scene.camera.center), 1) << '\n';
   for (double i = 0; i < 2; i += 0.01) {
@@ -459,10 +478,54 @@ void obj() {
     std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, arrival), scene.camera.center), 1) << '\n';
   }
   Image image = scene.raycasting();
-  image.save_as_ppm("images/obj.ppm");
+  image.save_as_ppm("images/island_2.ppm");
   //Y forward Z up triangulisation
 }
 
+void muntain(Camera camera, int image_num) {
+  Scene scene = Scene(camera, 1);
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
+  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0, 1);
+  auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(0,0,-1), Vector3(0,0,1));
+  scene.add_object(plane);
+  auto light = std::make_shared<Point_Light>(Point3(2,0.5,2), 1000);
+  auto light_2 = std::make_shared<Point_Light>(Point3(2,4.5,2), 1000);
+  auto light_3 = std::make_shared<Point_Light>(Point3(2,-4.5,2), 1000);
+  auto light_4 = std::make_shared<Point_Light>(Point3(18,0,18), 1000);
+  scene.add_light(light);
+  scene.add_light(light_2);
+  scene.add_light(light_3);
+  scene.add_light(light_4);
+  create_sky_in_scene(scene);
+  create_water_in_scene(scene);
+  auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/geometry/TEX_test.ppm");
+  create_mesh_from_obj(scene, texture, "images/geometry/OBJ_island_1000.obj");
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-0.23,0.75)), scene.camera.center), 1) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-0.24,0.75)), scene.camera.center), 1) << '\n';
+  for (double i = 0; i < 2; i += 0.01) {
+    Point3 arrival(4,0, 0.5 - i);
+    std::cout << arrival << " : ";
+    std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, arrival), scene.camera.center), 1) << '\n';
+  }
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/muntain_" + std::to_string(image_num) + ".ppm");
+  //Y forward Z up triangulisation
+}
+
+void muntain_different_views() {
+  Point3 spotted_point(10,0,0);
+  Vector3 up(1, 0, 1);
+  float alpha = 45.0;
+  float beta = 45.0;
+  float zmin = 1.0; //Why changing this parameter does not affect the output image
+  int image_num = 1 ;
+  for (float f=0.0; f<5; f+=0.2) {
+    Point3 center(0, 0, f);
+    Camera camera(center, spotted_point, up, alpha, beta, zmin);
+    muntain(camera, image_num);
+    image_num++;
+  }
+}
 
 //TODO change the two planes in refraction test
 int main() {
@@ -478,7 +541,9 @@ int main() {
   //simple_plane();
   //two_spheres_on_plane();
   //sphere_anti_aliased();
-  obj();
+  //obj();
+  //muntain_different_views();
+  muntain(create_standard_camera(), 99);
 }
 
 

@@ -186,7 +186,7 @@ void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B
                         textureCoordinates, normal);
   PerlinNoise perlinNoise(12);
   double frequency = 1.25f;
-  double amplitude = 3.5f;
+  double amplitude = 0.5f;
   unsigned numVertices = (heightDivisions + 1) * (widthDivisions + 1);
   std::vector<Vector3> normals(numVertices, Vector3());
   //Compute displacements
