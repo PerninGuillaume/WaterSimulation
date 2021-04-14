@@ -41,6 +41,7 @@ SmoothTriangle::SmoothTriangle(std::shared_ptr<Texture_Material> texture_materia
     , A_text_coord(std::move(A_text_coord))
     , B_text_coord(std::move(B_text_coord))
     , C_text_coord(std::move(C_text_coord))
+    , normal(Vector3(A, B).vector_product(Vector3(A, C)).normalize())
 {}
 //-----------------------------------------------SPHERE------------------------------------------------------------//
 
@@ -69,9 +70,9 @@ std::optional<double> Sphere::is_intersecting(const Rayon& ray, double&, double&
     return std::min(t0, t1);
 }
 
-Vector3 Sphere::normal_at_point(const Point3& point, const Rayon&, double, double)
+Vector3 Sphere::normal_at_point(const Point3& point, double, double, bool)
 {
-    return Vector3(point.x - origin.x, point.y - origin.y, point.z - origin.z);
+    return Vector3(point.x - origin.x, point.y - origin.y, point.z - origin.z).normalize();
 }
 
 Caracteristics Sphere::texture_at_point(const Point3&, double, double) {
@@ -89,10 +90,10 @@ std::optional<double> Plane::is_intersecting(const Rayon& ray, double&, double&)
     return tmp / scalar;
 }
 
-Vector3 Plane::normal_at_point(const Point3&, const Rayon& ray, double, double) {
-  if (ray.direction.scalar_product(this->normal) > 0) {
+Vector3 Plane::normal_at_point(const Point3&, double, double, bool) {
+  /*if (ray.direction.scalar_product(this->normal) > 0) {
     return -1.0 * this->normal;
-  }
+  }*/
   return this->normal;
 }
 
@@ -149,10 +150,10 @@ std::optional<double> Triangle::is_intersecting(const Rayon& ray) {
 }
  */
 
-Vector3 Triangle::normal_at_point(const Point3&, const Rayon& ray, double, double) {
-  if (ray.direction.scalar_product(this->normal) > 0) {
+Vector3 Triangle::normal_at_point(const Point3&, double, double, bool) {
+  /*if (ray.direction.scalar_product(this->normal) > 0) {
     return -1.0 * this->normal;
-  }
+  }*/
   return this->normal;
 }
 
@@ -199,13 +200,15 @@ std::optional<double> SmoothTriangle::is_intersecting(const Rayon &ray, double &
 }
 
 //This function should be called only after is_intersecting has been called in order for u,v and w to be initialized
-Vector3 SmoothTriangle::normal_at_point(const Point3&, const Rayon& ray, double u, double v) {
+Vector3 SmoothTriangle::normal_at_point(const Point3&, double u, double v, bool interpolate) {
+  if (!interpolate)
+    return normal;
   double w = 1.0 - u - v;
   Vector3 interpolatedVector = w * normA + u * normB + v * normC;
   interpolatedVector.normalize();
-  if (ray.direction.scalar_product(interpolatedVector) > 0) {
+  /*if (ray.direction.scalar_product(interpolatedVector) > 0) {
     return -1.0 * interpolatedVector;
-  }
+  }*/
   return interpolatedVector;
 }
 

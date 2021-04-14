@@ -62,7 +62,6 @@ void triangleMeshObj(Scene& scene, const std::shared_ptr<Texture_Material>& text
     , const std::vector<int> &vertexIndices, const std::vector<int> &textureIndices, const std::vector<int> &normalIndices
     , const std::vector<Point3>& points, const std::vector<Vector3> &normals, const std::vector<Point3>& textures)
 {
-  //TODO simplify fonction as we know we only have triangles
   for (int i = 0, k = 0; i < nb_triangles; ++i) {
       int index_1 = k;
       int index_2 = k + 1;
