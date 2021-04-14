@@ -357,8 +357,6 @@ void debug() {
   auto texture = std::make_shared<Uniform_Texture>(caracteristics_green);
   auto triangle = std::make_shared<SmoothTriangle>(texture, A, B, C, normA, normB, normC);
   scene.add_object(triangle);
-  auto texture = std::make_shared<Uniform_Texture>(caracteristics_green);
-  auto triangle = std::make_shared<SmoothTriangle>(texture, A, B, C, normA, normB, normC);
   /*std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,0,-0.73)), scene.camera.center), 2) << '\n';
   std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,0,-1.1)), scene.camera.center), 2) << '\n';
   for (double i = 0; i < 2; i += 0.01) {
@@ -567,7 +565,7 @@ void lake() {
 //TODO change the two planes in refraction test
 int main() {
   //nice_scene_different_views();
-  //refraction_sphere_on_plane();
+  refraction_sphere_on_plane();
   //displacement_texture();
   //displacement();
   //perlin_noise_2d();
@@ -580,7 +578,7 @@ int main() {
   //sphere_anti_aliased();
   //obj();
   //muntain_different_views();
-  muntain(create_standard_camera(), 99);
+  //muntain(create_standard_camera(), 99);
   //boat(create_standard_camera(), 99);
   //circle_boat_views();
   //debug();
