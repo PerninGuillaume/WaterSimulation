@@ -260,7 +260,7 @@ void create_montain_in_scene(Scene& scene) {
 void create_sky_in_scene(Scene& scene) {
 
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
-  const std::string filename = "images/sky.ppm";
+  const std::string filename = "images/muntain_scene/sky.ppm";
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
@@ -320,7 +320,7 @@ void create_water_in_scene(Scene& scene) {
   //Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1, 1.33);
   //auto texture = std::make_shared<Uniform_Texture>(caracteristics_blue)
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0.8, 0);
-  auto texture = std::make_shared<Image_Texture>(caracteristics_blue, "images/water_texture.ppm");
+  auto texture = std::make_shared<Image_Texture>(caracteristics_blue, "images/muntain_scene/TEX_water.ppm");
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
@@ -468,8 +468,8 @@ void obj() {
   scene.add_light(light);
   //scene.add_light(light_2);
   //scene.add_light(light_3);
-  auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/geometry/TEX_test.ppm");
-  create_mesh_from_obj(scene, texture, "images/geometry/OBJ_island.obj");
+  auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/geometry/TEX_red.ppm");
+  create_mesh_from_obj(scene, texture, "images/geometry/monkey.obj");
   std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-0.23,0.75)), scene.camera.center), 1) << '\n';
   std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-0.24,0.75)), scene.camera.center), 1) << '\n';
   for (double i = 0; i < 2; i += 0.01) {
@@ -498,8 +498,8 @@ void muntain(Camera camera, int image_num) {
   scene.add_light(light_4);
   create_sky_in_scene(scene);
   create_water_in_scene(scene);
-  auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/geometry/TEX_test.ppm");
-  create_mesh_from_obj(scene, texture, "images/geometry/OBJ_island_1000.obj");
+  auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/muntain_scene/TEX_muntain.ppm");
+  create_mesh_from_obj(scene, texture, "images/muntain_scene/OBJ_muntain_1000.obj");
   std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-0.23,0.75)), scene.camera.center), 1) << '\n';
   std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(4,-0.24,0.75)), scene.camera.center), 1) << '\n';
   for (double i = 0; i < 2; i += 0.01) {
