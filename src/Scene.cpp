@@ -208,6 +208,31 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
   return result;
 }
 
+void print_time(int seconds) {
+  int minutes = seconds / 60;
+  int hours = minutes / 60;
+  if (hours != 0) {
+    std::cout << hours << "h ";
+  }
+  if (minutes != 0) {
+    std::cout << minutes % 60 << "m ";
+  }
+  std::cout << seconds % 60 << "s";
+}
+
+void print_remaining_time(int percentage, std::chrono::time_point<std::chrono::system_clock> start) {
+  auto time_step = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::seconds>(time_step - start);
+  auto remaining_time = ((double)duration.count() / (double)percentage) * (100.0 - (double)percentage);
+  std::cout << ' ' << percentage << ' ';
+  print_time(duration.count());
+  std::cout << '/';
+  print_time(remaining_time);
+  std::cout << " " << std::flush;
+  if (percentage == 50)
+    std::cout << '\n';
+}
+
 Image Scene::raycasting() {
   std::cout << "Number of objects in this scene : " << this->objects.size() << '\n';
   auto start = std::chrono::high_resolution_clock::now();
@@ -249,15 +274,15 @@ Image Scene::raycasting() {
     ++loading;
     int percentage = 100 * loading / nb_pixels;
     if (percentage > displayed) {
-      std::cout << ' ' << displayed << ' ' << std::flush;
-      if (displayed == 50)
-        std::cout << '\n';
+      print_remaining_time(percentage, start);
       ++displayed;
     }
   }
   std::cout << "\nFinished render\n";
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-  std::cout << "Execution time : " << duration.count() << " seconds\n";
+  std::cout << "Execution time : ";
+  print_time(duration.count());
+  std::cout << " seconds\n";
   return image;
 }
