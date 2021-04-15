@@ -488,6 +488,7 @@ void boat(Camera camera, int image_num) {
   auto light_6 = std::make_shared<Point_Light>(Point3(15,-0,15), 1000);
   auto light_7 = std::make_shared<Point_Light>(Point3(0,-15,15), 1000);
   auto light_8 = std::make_shared<Point_Light>(Point3(-15,0,15), 1000);
+  auto light_9 = std::make_shared<Point_Light>(Point3(0,0,17), 1000);
   scene.add_light(light_1);
   scene.add_light(light_2);
   scene.add_light(light_3);
