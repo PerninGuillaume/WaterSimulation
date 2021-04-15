@@ -404,7 +404,7 @@ void create_sky_in_scene(Scene& scene) {
                , points, normals, textureCoordinates);
 }
 
-void create_muntain_water_in_scene(Scene& scene) {
+void create_muntain_water_in_scene(Scene& scene, float water_amplitude, float water_z) {
 
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.1, 0.3, 0.4);//, 1.33);
   auto texture = std::make_shared<Uniform_Texture>(caracteristics_blue);
@@ -413,14 +413,14 @@ void create_muntain_water_in_scene(Scene& scene) {
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
-  std::vector<Point3> points = {{15, -15, 0.5}, {0, -15, 0.5}, {0, 15, 0.5}, {15, 15, 0.5}};
+  std::vector<Point3> points = {{15, -15, water_z}, {0, -15, water_z}, {0, 15, water_z}, {15, 15, water_z}};
   std::vector<Vector3> normals = {{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}};
   std::vector<Point3> textureCoordinates = {{0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}};
   //triangleMesh(scene, texture, faceIndex, vertexIndices, points, normals, textureCoordinates);
-  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 50, 50, texture, false, true);
+  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 50, 50, texture, false, true, water_amplitude);
 }
 
-void muntain(Camera camera, int image_num) {
+void muntain(Camera camera, int image_num, float water_amplitude = 0.3f, float water_z = 0.5f) {
   Scene scene = Scene(camera, 5);
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0, 1);
   
@@ -436,12 +436,12 @@ void muntain(Camera camera, int image_num) {
 
   //sky, water and muntain
   create_sky_in_scene(scene);
-  create_muntain_water_in_scene(scene);
+  create_muntain_water_in_scene(scene, water_amplitude, water_z);
   auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/muntain_scene/TEX_muntain.ppm");
   create_mesh_from_obj(scene, texture, "images/muntain_scene/OBJ_muntain_1000.obj");
   
   Image image = scene.raycasting();
-  image.save_as_ppm("images/zoom_muntain_" + std::to_string(image_num) + ".ppm");
+  image.save_as_ppm("images/muntain_water" + std::to_string(image_num) + ".ppm");
 }
 
 void muntain_up_views() {
@@ -471,6 +471,27 @@ void muntain_dezoom_views() {
     Point3 center(cos(angle) * circle_radius, 0, sin(angle) * circle_radius + 1);
     Camera camera(center, spotted_point, up, alpha, beta, zmin);
     muntain(camera, image_num);
+    image_num++;
+  }
+}
+
+void muntain_water_changing_views() {
+  Point3 spotted_point(20,0,1);
+  Point3 center(2, 0, 2);
+  Vector3 up(0,0,1);
+  float alpha = 60.64;//For a ratio of 16/9
+  float beta = 45.0;
+  float zmin = 1.0;
+  int image_num = 1;
+  float water_z = 0.5f;
+  Camera camera(center, spotted_point, up, alpha, beta, zmin);
+  for (float amplitude=0.0; amplitude < 0.5; amplitude += 0.05) {
+    muntain(camera, image_num, amplitude);
+    image_num++;
+  }
+  for (float amplitude=0.5; amplitude < 1.5; amplitude += 0.1) {
+    muntain(camera, image_num, amplitude, water_z);
+    water_z += 0.075;
     image_num++;
   }
 }
@@ -557,8 +578,9 @@ int main() {
   //sphere_anti_aliased();
   //obj();
   //muntain_up_views();
-  muntain_dezoom_views();
+  //muntain_dezoom_views();
   //muntain(create_standard_camera(), 99);
+  muntain_water_changing_views();
   //circle_boat_views();
 }
 

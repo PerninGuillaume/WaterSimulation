@@ -174,7 +174,7 @@ void create_base_rectangle(const Point3& A, const Point3& B, const Point3& C, co
 
 void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B, const Point3& C, const Point3& D,
                                   unsigned widthDivisions, unsigned heightDivisions, std::shared_ptr<Texture_Material> textureMaterial,
-                                  bool analytical_normals, bool smooth) {
+                                  bool analytical_normals, bool smooth, float water_amplitude) {
 
 
   std::vector<int> faceIndex;
@@ -186,7 +186,7 @@ void rectangle_displaced_by_noise(Scene& scene, const Point3& A, const Point3& B
                         textureCoordinates, normal);
   PerlinNoise perlinNoise(12);
   double frequency = 1.25f;
-  double amplitude = 0.3f;
+  double amplitude = water_amplitude;
   unsigned numVertices = (heightDivisions + 1) * (widthDivisions + 1);
   std::vector<Vector3> normals(numVertices, Vector3());
   //Compute displacements
