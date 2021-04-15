@@ -362,7 +362,7 @@ void obj() {
 
 void create_sky_in_scene(Scene& scene) {
 
-  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 0);
   const std::string filename = "images/muntain_scene/sky.ppm";
 
   std::vector<int> faceIndex = {4};
