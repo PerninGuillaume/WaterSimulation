@@ -490,7 +490,7 @@ void boat(Camera camera, int image_num, float water_height, bool sinking_boat=fa
   auto light_6 = std::make_shared<Point_Light>(Point3(15,-0,15), 1000);
   auto light_7 = std::make_shared<Point_Light>(Point3(0,-15,15), 1000);
   auto light_8 = std::make_shared<Point_Light>(Point3(-15,0,15), 1000);
-  auto light_9 = std::make_shared<Point_Light>(Point3(0,0,17), 1000);
+  auto light_9 = std::make_shared<Point_Light>(Point3(0,0,15), 1000);
   scene.add_light(light_1);
   scene.add_light(light_2);
   scene.add_light(light_3);
@@ -543,7 +543,7 @@ void sink_boat_views() {
   float beta = 45.0;
   float zmin = 1.0;
   int image_num = 1;
-  for (float z = 0.0; z<10; z+=0.5) {
+  for (float z = -15.0; z<10; z+=0.5) {
     Point3 spotted_point(0,0,0);
     Vector3 up(0,0,1);
     Point3 center(cos(PI * 3/4) * circle_radius, sin(PI * 3/4) * circle_radius, camera_z);
