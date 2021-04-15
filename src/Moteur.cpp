@@ -364,6 +364,8 @@ void create_sky_in_scene(Scene& scene) {
 
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 0);
   const std::string filename = "images/muntain_scene/sky.ppm";
+  const std::string filename_blue = "images/muntain_scene/blue_sky.ppm";
+
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
@@ -461,7 +463,7 @@ void muntain_different_views() {
 
 void create_boat_water_in_scene(Scene& scene, float water_height) {
 
-  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.1, 0.3, 0.4, 1.33);
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.1, 0.3, 0.4);//, 1.33); // boat sinking add refraction
   auto texture = std::make_shared<Uniform_Texture>(caracteristics_blue);
   //Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0.8, 0);
   //auto texture = std::make_shared<Image_Texture>(caracteristics_blue, "images/muntain_scene/TEX_water.ppm");
@@ -475,7 +477,7 @@ void create_boat_water_in_scene(Scene& scene, float water_height) {
   rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 40, 40, texture, false, true);
 }
 
-void boat(Camera camera, int image_num, float water_height) {
+void boat(Camera camera, int image_num, float water_height, bool sinking_boat=false) {
   Scene scene = Scene(camera, 4);
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.5, 0, 1);
   
@@ -501,11 +503,18 @@ void boat(Camera camera, int image_num, float water_height) {
   //sky, water and muntain
   create_sky_in_scene(scene);
   create_boat_water_in_scene(scene, water_height);
-  auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/geometry/TEX_red.ppm");
-  create_mesh_from_obj(scene, texture, "images/geometry/OBJ_boat.obj");
+  auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/boat_scene/TEX_red.ppm");
   
-  Image image = scene.raycasting();
-  image.save_as_ppm("images/sink_boat_" + std::to_string(image_num) + ".ppm");
+  if (sinking_boat) {
+    create_mesh_from_obj(scene, texture, "images/boat_scene/OBJ_boat_sink.obj");
+    Image image = scene.raycasting();
+    image.save_as_ppm("images/sink_boat_" + std::to_string(image_num) + ".ppm");
+  }
+  else {
+    create_mesh_from_obj(scene, texture, "images/boat_scene/OBJ_boat.obj");
+    Image image = scene.raycasting();
+    image.save_as_ppm("images/boat_" + std::to_string(image_num) + ".ppm");
+  }
 }
 
 void circle_boat_views() {
@@ -534,12 +543,12 @@ void sink_boat_views() {
   float beta = 45.0;
   float zmin = 1.0;
   int image_num = 1;
-  for (float z = -15.0; z<10; z+=0.5) {
+  for (float z = 0.0; z<10; z+=0.5) {
     Point3 spotted_point(0,0,0);
     Vector3 up(0,0,1);
     Point3 center(cos(PI * 3/4) * circle_radius, sin(PI * 3/4) * circle_radius, camera_z);
     Camera camera(center, spotted_point, up, alpha, beta, zmin);
-    boat(camera, image_num, z);
+    boat(camera, image_num, z, true);
     image_num++;
   }
 }
@@ -561,7 +570,7 @@ int main() {
   //obj();
   //muntain_different_views();
   //muntain(create_standard_camera(), 99);
-  //circle_boat_views();
+  circle_boat_views();
   sink_boat_views();
 }
 
