@@ -477,6 +477,22 @@ void create_boat_water_in_scene(Scene& scene, float water_height) {
   rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 40, 40, texture, false, true);
 }
 
+void create_sink_boat_water_in_scene(Scene& scene, float water_height) {
+
+  Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.1, 0.3, 0.4, 1.33); // boat sinking add refraction
+  auto texture = std::make_shared<Uniform_Texture>(caracteristics_blue);
+  //Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0.8, 0);
+  //auto texture = std::make_shared<Image_Texture>(caracteristics_blue, "images/muntain_scene/TEX_water.ppm");
+
+  std::vector<int> faceIndex = {4};
+  std::vector<int> vertexIndices = {0,1,2,3};
+  std::vector<Point3> points = {{20, -20, water_height}, {-20, -20, water_height}, {-20, 20, water_height}, {20, 20, water_height}};
+  std::vector<Vector3> normals = {{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}};
+  std::vector<Point3> textureCoordinates = {{0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}};
+  //triangleMesh(scene, texture, faceIndex, vertexIndices, points, normals, textureCoordinates);
+  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 40, 40, texture, false, true);
+}
+
 void boat(Camera camera, int image_num, float water_height, bool sinking_boat=false) {
   Scene scene = Scene(camera, 4);
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.5, 0, 1);
@@ -502,15 +518,16 @@ void boat(Camera camera, int image_num, float water_height, bool sinking_boat=fa
 
   //sky, water and muntain
   create_sky_in_scene(scene);
-  create_boat_water_in_scene(scene, water_height);
   auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/boat_scene/TEX_red.ppm");
   
   if (sinking_boat) {
+    create_sink_boat_water_in_scene(scene, water_height);
     create_mesh_from_obj(scene, texture, "images/boat_scene/OBJ_boat_sink.obj");
     Image image = scene.raycasting();
     image.save_as_ppm("images/sink_boat_" + std::to_string(image_num) + ".ppm");
   }
   else {
+    create_boat_water_in_scene(scene, water_height);
     create_mesh_from_obj(scene, texture, "images/boat_scene/OBJ_boat.obj");
     Image image = scene.raycasting();
     image.save_as_ppm("images/boat_" + std::to_string(image_num) + ".ppm");
