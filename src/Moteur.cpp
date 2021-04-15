@@ -441,10 +441,10 @@ void muntain(Camera camera, int image_num) {
   create_mesh_from_obj(scene, texture, "images/muntain_scene/OBJ_muntain_1000.obj");
   
   Image image = scene.raycasting();
-  image.save_as_ppm("images/muntain_" + std::to_string(image_num) + ".ppm");
+  image.save_as_ppm("images/zoom_muntain_" + std::to_string(image_num) + ".ppm");
 }
 
-void muntain_different_views() {
+void muntain_up_views() {
   Point3 spotted_point(10,0,0);
   Vector3 up(0,0,1);
   float alpha = 60.64;//For a ratio of 16/9
@@ -453,6 +453,22 @@ void muntain_different_views() {
   int image_num = 1;
   for (float f=0.0; f<5; f+=0.1) {
     Point3 center(0, 0, f);
+    Camera camera(center, spotted_point, up, alpha, beta, zmin);
+    muntain(camera, image_num);
+    image_num++;
+  }
+}
+
+void muntain_dezoom_views() {
+  Point3 spotted_point(20,0,1);
+  Vector3 up(0,0,1);
+  float alpha = 60.64;//For a ratio of 16/9
+  float beta = 45.0;
+  float zmin = 1.0;
+  float circle_radius = 5;
+  int image_num = 1;
+  for (float angle=0.0; angle < PI / 2; angle+=0.2) {
+    Point3 center(cos(angle) * circle_radius, 0, sin(angle) * circle_radius + 1);
     Camera camera(center, spotted_point, up, alpha, beta, zmin);
     muntain(camera, image_num);
     image_num++;
@@ -540,18 +556,9 @@ int main() {
   //two_spheres_on_plane();
   //sphere_anti_aliased();
   //obj();
-  //muntain_different_views();
+  //muntain_up_views();
+  muntain_dezoom_views();
   //muntain(create_standard_camera(), 99);
-  Point3 spotted_point(0,0,0);
-  Vector3 up(0,0,1);
-  float circle_radius = 18;
-  float camera_z = 4;
-  float alpha = 60.64; //For a ratio of 16/9
-  float beta = 45.0;
-  float zmin = 1.0;
-  Point3 center(cos(PI * 3/4) * circle_radius, sin(PI * 3/4) * circle_radius, camera_z);
-  Camera camera(center, spotted_point, up, alpha, beta, zmin);
-  boat(camera, 99);
   //circle_boat_views();
 }
 

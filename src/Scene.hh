@@ -55,8 +55,8 @@ public:
     bool shadow = true;
     bool refraction = true;
     int msaa_samples = 1;
-    int width = 80;
-    int height = 45;
+    int width = 160;
+    int height = 90;
 
 };
 
