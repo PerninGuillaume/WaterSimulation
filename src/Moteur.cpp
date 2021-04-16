@@ -419,7 +419,7 @@ void create_muntain_water_in_scene(Scene& scene, float water_amplitude, float wa
   std::vector<Vector3> normals = {{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}};
   std::vector<Point3> textureCoordinates = {{0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}};
   //triangleMesh(scene, texture, faceIndex, vertexIndices, points, normals, textureCoordinates);
-  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 50, 50, texture, false, true, water_amplitude);
+  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 40, 40, texture, false, true, water_amplitude);
 }
 
 void muntain(Camera camera, int image_num, float water_amplitude = 0.3f, float water_z = 0.5f) {
@@ -467,10 +467,10 @@ void muntain_dezoom_views() {
   float alpha = 60.64;//For a ratio of 16/9
   float beta = 45.0;
   float zmin = 1.0;
-  float circle_radius = 5;
+  float circle_radius = 6;
   int image_num = 1;
   for (float angle=0.0; angle < PI / 2; angle+=0.2) {
-    Point3 center(cos(angle) * circle_radius, 0, sin(angle) * circle_radius + 1);
+    Point3 center(7 - sin(angle) * circle_radius, 0, 7 - cos(angle) * circle_radius);
     Camera camera(center, spotted_point, up, alpha, beta, zmin);
     muntain(camera, image_num);
     image_num++;
@@ -511,7 +511,7 @@ void create_boat_water_in_scene(Scene& scene, float water_height) {
   std::vector<Vector3> normals = {{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}};
   std::vector<Point3> textureCoordinates = {{0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}};
   //triangleMesh(scene, texture, faceIndex, vertexIndices, points, normals, textureCoordinates);
-  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 40, 40, texture, false, true);
+  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 40, 40, texture, false, true, 0.5f);
 }
 
 void create_boat_moving_water_in_scene(Scene& scene, float x_offset) {
@@ -548,7 +548,7 @@ void create_sink_boat_water_in_scene(Scene& scene, float water_height) {
 
 void boat(Camera camera, int image_num, float water_height=0.5f, bool sinking_boat=false, float moving_water_offset=9999.0f) {
   Scene scene = Scene(camera, 4);
-  Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.5, 0, 1);
+  Caracteristics caracteristics_red(Pixel(255, 0, 0), 0.5, 0, 1);
   
   //lights
   auto light_1 = std::make_shared<Point_Light>(Point3(15,15,18), 1000);
@@ -571,8 +571,8 @@ void boat(Camera camera, int image_num, float water_height=0.5f, bool sinking_bo
 
   //sky, water and muntain
   create_sky_in_scene(scene);
-  auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/boat_scene/TEX_red.ppm");
-  
+  auto texture = std::make_shared<Uniform_Texture>(caracteristics_red);
+
   if (sinking_boat) {
     create_sink_boat_water_in_scene(scene, water_height);
     create_mesh_from_obj(scene, texture, "images/boat_scene/OBJ_boat_sink.obj");
@@ -590,7 +590,7 @@ void boat(Camera camera, int image_num, float water_height=0.5f, bool sinking_bo
   }
 }
 
-void circle_boat_views() {
+void circle_boat_views_1() {
   Point3 spotted_point(0,0,0);
   Vector3 up(0,0,1);
   float circle_radius = 18;
@@ -599,7 +599,24 @@ void circle_boat_views() {
   float beta = 45.0;
   float zmin = 1.0;
   int image_num = 1;
-  for (float angle=0.0; angle < PI * 2; angle+=0.2) {
+  for (float angle=0.2; angle < 6.4; angle+=0.4) {
+    Point3 center(cos(angle) * circle_radius, sin(angle) * circle_radius, camera_z);
+    Camera camera(center, spotted_point, up, alpha, beta, zmin);
+    boat(camera, image_num, 0.5);
+    image_num++;
+  }
+}
+
+void circle_boat_views_2() {
+  Point3 spotted_point(0,0,0);
+  Vector3 up(0,0,1);
+  float circle_radius = 18;
+  float camera_z = 4;
+  float alpha = 60.64; //For a ratio of 16/9
+  float beta = 45.0;
+  float zmin = 1.0;
+  int image_num = 1;
+  for (float angle=0.0; angle < 6.4; angle+=0.4) {
     Point3 center(cos(angle) * circle_radius, sin(angle) * circle_radius, camera_z);
     Camera camera(center, spotted_point, up, alpha, beta, zmin);
     boat(camera, image_num, 0.5);
@@ -659,13 +676,19 @@ int main() {
   //obj();
   //nice_scene_different_views();
   //muntain_up_views();
-  //muntain_dezoom_views();
+  
   //muntain(create_standard_camera(), 99);
   //muntain_water_changing_views();
-  //circle_boat_views();
-  //circle_boat_views();
+ 
   //sink_boat_views();
-  boat_moving_water_views();
+  //muntain_dezoom_views();
+  
+  // Pierrick :
+  //boat_moving_water_views();
+  
+  // Guillaume :
+  //circle_boat_views_1();
+  //circle_boat_views_2();
 }
 
 
