@@ -204,7 +204,30 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
   }
   return result;
 }
+void print_time(int seconds) {
+  int minutes = seconds / 60;
+  int hours = minutes / 60;
+  if (hours != 0) {
+    std::cout << hours << "h ";
+  }
+  if (minutes != 0) {
+    std::cout << minutes % 60 << "m ";
+  }
+  std::cout << seconds % 60 << "s";
+}
 
+void print_remaining_time(int percentage, std::chrono::time_point<std::chrono::system_clock> start) {
+  auto time_step = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::seconds>(time_step - start);
+  auto remaining_time = ((double)duration.count() / (double)percentage) * (100.0 - (double)percentage);
+  std::cout << ' ' << percentage << ' ';
+  print_time(duration.count());
+  std::cout << '/';
+  print_time(remaining_time);
+  std::cout << " " << std::flush;
+  if (percentage == 50)
+    std::cout << '\n';
+}
 Image Scene::raycasting() {
   std::cout << "Number of objects in this scene : " << this->objects.size() << '\n';
   auto start = std::chrono::high_resolution_clock::now();
@@ -213,6 +236,11 @@ Image Scene::raycasting() {
   std::random_device rd; // obtain a random number from hardware
   std::mt19937 gen(rd()); // seed the generator
   std::uniform_real_distribution<> distr(-0.5, 0.5); // define the range
+  //We compute one and for all the random anti aliased samples instead of every loop
+  std::vector<double> anti_aliased_samples;
+  for (int i = 0; i < this->msaa_samples * 2; ++i) {
+    anti_aliased_samples.emplace_back(distr(gen));
+  }
   int loading = 0;
   const size_t nb_pixels = height * width;
   int displayed = 0;
@@ -224,8 +252,9 @@ Image Scene::raycasting() {
       image.pixels[index_pixel] = pixel;
     } else {
       double red = 0.0, green = 0.0, blue = 0.0;
-      for (int i = 0; i < this->msaa_samples; ++i) {
-        auto random_location = pixels_location[index_pixel] + distr(gen) * this->camera.unit_x_vector + distr(gen) * this->camera.unit_y_vector;
+      for (int i = 0; i < this->msaa_samples * 2; i += 2) {
+        auto random_location = pixels_location[index_pixel] + anti_aliased_samples[i] * this->camera.unit_x_vector
+                               + anti_aliased_samples[i + 1] * this->camera.unit_y_vector;
         Rayon ray(Vector3(this->camera.center, random_location).normalize(), this->camera.center);
         auto pixel = this->raycast(ray, this->max_bounces);
         red += pixel.x;
@@ -240,15 +269,15 @@ Image Scene::raycasting() {
     ++loading;
     int percentage = 100 * loading / nb_pixels;
     if (percentage > displayed) {
-      std::cout << ' ' << displayed << ' ' << std::flush;
-      if (displayed == 50)
-        std::cout << '\n';
+      print_remaining_time(percentage, start);
       ++displayed;
     }
   }
   std::cout << "\nFinished render\n";
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-  std::cout << "Execution time : " << duration.count() << " seconds\n";
+  std::cout << "Execution time : ";
+  print_time(duration.count());
+  std::cout << " seconds\n";
   return image;
 }
