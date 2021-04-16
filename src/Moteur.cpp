@@ -16,18 +16,27 @@ Camera create_standard_camera() {
   return camera;
 }
 
-void simple_ray_casting() {
-    Scene scene = Scene(create_standard_camera(), 1);
-    Caracteristics caracteristics_red(Pixel(255,0,0), 0.05, 0.5, 2);
-    Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.1, 0.5, 2);
-    Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.5, 0.5, 2);
+Camera create_straight_looking_camera() {
+  Point3 center(0,0,0);
+  Point3 spotted_point(2,0,0);
+  Vector3 up(0,0,1);
+  float alpha = 60.64;//For a ratio of 16/9
+  float beta = 45.0;
+  float zmin = 1.0; //Why changing this parameter does not affect the output image
+  Camera camera(center, spotted_point, up, alpha, beta, zmin);
+  return camera;
+}
 
-    auto sphere1 = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_red), Point3(10,0,0), 1.0);
-    auto sphere2 = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_green), Point3(10, 5, 0), 1.0);
-    auto sphere3 = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(8, 0, 0), 0.5);
-    scene.add_object({sphere1, sphere2, sphere3});
-    Image image = scene.raycasting();
-    image.save_as_ppm("images/simple_ray_casting.ppm");
+void simple_ray_casting() {
+  Scene scene = Scene(create_straight_looking_camera(), 2);
+  Caracteristics caracteristics_red(Pixel(255,0,0), 0.5, 0.5, 2);
+
+  auto sphere1 = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_red), Point3(4,0,1), 1.0);
+  scene.add_object(sphere1);
+  auto light = std::make_shared<Point_Light>(Point3(5,0,10), 1000);
+  scene.add_light(light);
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/simple_ray_casting.ppm");
 }
 
 void intermediate() {
@@ -60,7 +69,7 @@ void sphere_on_simple_plane() {
 }
 
 void triangle_on_plane() {
-  Scene scene = Scene(create_standard_camera(), 5);
+  Scene scene = Scene(create_straight_looking_camera(), 5);
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.2, 0.5, 1);
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.4, 0.3, 1);
   auto triangle1 = std::make_shared<Triangle>(std::make_shared<Uniform_Texture>(caracteristics_green),
@@ -69,7 +78,7 @@ void triangle_on_plane() {
           Point3(4,-1,1), Point3(4.5,-1,-1), Point3(3,1,-2));
   auto plane = std::make_shared<Plane>(std::make_shared<Uniform_Texture>(caracteristics_blue), Point3(5,0,0), Vector3(-1,0,0));
   scene.add_object({triangle1, triangle2, plane});
-  auto light = std::make_shared<Point_Light>(Point3(2,0,0), 1000);
+  auto light = std::make_shared<Point_Light>(Point3(2,0,0), 8);
   scene.add_light(light);
   Image image = scene.raycasting();
   image.save_as_ppm("images/triangle_on_plane.ppm");
@@ -402,10 +411,9 @@ void glass() {
   //Y forward Z up triangulisation
 }
 
-void create_sky_in_scene(Scene& scene) {
+void create_sky_in_scene(Scene& scene, const std::string filename) {
 
   Caracteristics caracteristics_blue(Pixel(0, 0, 255), 0.8, 0, 1);
-  const std::string filename = "images/muntain_scene/sky.ppm";
 
   std::vector<int> faceIndex = {4};
   std::vector<int> vertexIndices = {0,1,2,3};
@@ -477,7 +485,8 @@ void muntain(Camera camera, int image_num) {
   scene.add_light(light_4);
 
   //sky, water and muntain
-  create_sky_in_scene(scene);
+  const std::string filename = "images/muntain_scene/sky.ppm";
+  create_sky_in_scene(scene, filename);
   create_muntain_water_in_scene(scene);
   auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/muntain_scene/TEX_muntain.ppm");
   create_mesh_from_obj(scene, texture, "images/muntain_scene/OBJ_muntain_1000.obj");
@@ -519,6 +528,7 @@ void create_boat_water_in_scene(Scene& scene) {
 
 void boat(Camera camera, int image_num) {
   Scene scene = Scene(camera, 4);
+  scene.use_vertex_normal = true;
   Caracteristics caracteristics_green(Pixel(0, 255, 0), 0.5, 0, 1);
   
   //lights
@@ -540,7 +550,8 @@ void boat(Camera camera, int image_num) {
   scene.add_light(light_8);
 
   //sky, water and muntain
-  create_sky_in_scene(scene);
+  const std::string filename = "images/muntain_scene/sky.ppm";
+  create_sky_in_scene(scene, filename);
   create_boat_water_in_scene(scene);
   auto texture = std::make_shared<Image_Texture>(caracteristics_green, "images/geometry/TEX_red.ppm");
   create_mesh_from_obj(scene, texture, "images/geometry/OBJ_boat.obj");
@@ -566,14 +577,113 @@ void circle_boat_views() {
   }
 }
 
-void lake() {
+void create_skybox_light(Scene& scene) {
 
+  double color_intensity = 1.5;
+  auto light_1 = std::make_shared<Point_Light>(Point3(15,15,0), color_intensity);
+  auto light_2 = std::make_shared<Point_Light>(Point3(15,-15,13), color_intensity);
+  auto light_3 = std::make_shared<Point_Light>(Point3(-15,-15,3), color_intensity);
+  auto light_4 = std::make_shared<Point_Light>(Point3(-15,15,13), color_intensity);
+  auto light_5 = std::make_shared<Point_Light>(Point3(0,15,0), color_intensity);
+  auto light_6 = std::make_shared<Point_Light>(Point3(15,-0,10), color_intensity);
+  auto light_7 = std::make_shared<Point_Light>(Point3(0,-15,0), color_intensity);
+  auto light_8 = std::make_shared<Point_Light>(Point3(-15,0,10), color_intensity);
+  scene.add_light(light_1);
+  scene.add_light(light_2);
+  scene.add_light(light_3);
+  scene.add_light(light_4);
+  scene.add_light(light_5);
+  scene.add_light(light_6);
+  scene.add_light(light_7);
+  scene.add_light(light_8);
+
+}
+
+void reflecting_sphere_in_skybox() {
+  Scene scene = Scene(create_standard_camera(), 10);
+
+  scene.msaa_samples = 16;
+  const std::string filename = "images/landscape.ppm";
+  Caracteristics caracteristics_image(Pixel(0, 255, 0), 0.5, 0, 1);
+  create_mesh_from_obj(scene, std::make_shared<Image_Texture>(caracteristics_image, "images/panoramic.ppm"), "images/geometry/skybox_paranoma.obj");
+  create_skybox_light(scene);
+
+  Caracteristics caracteristics_reflective(Pixel(0, 255, 0), 0, 0.8, 1);
+  auto sphere = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_reflective), Point3(8,8,3), 1);
+  auto sphere_after_right = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_reflective), Point3(10,10,3), 1);
+  auto sphere_after_left = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_reflective), Point3(10,6,3), 1);
+  auto sphere_before_right = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_reflective), Point3(6,10,3), 1);
+  auto sphere_before_left = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_reflective), Point3(6,6,3), 1);
+  scene.add_object({sphere, sphere_after_right, sphere_after_left, sphere_before_right, sphere_before_left});
+  //lights
+
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/reflection_skybox.ppm");
+}
+
+void refraction_sphere_in_skybox() {
+  Scene scene = Scene(create_standard_camera(), 10);
+  scene.msaa_samples = 16;
+  const std::string filename = "images/landscape.ppm";
+  Caracteristics caracteristics_image(Pixel(0, 255, 0), 0.5, 0, 1);
+  create_mesh_from_obj(scene, std::make_shared<Image_Texture>(caracteristics_image, "images/panoramic.ppm"), "images/geometry/skybox_paranoma.obj");
+  create_skybox_light(scene);
+
+  Caracteristics caracteristics_transparent(Pixel(0, 255, 0), 0, 0.8, 1, 1.5);
+  auto sphere = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_transparent), Point3(8,8,3), 1);
+  auto sphere_after_right = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_transparent), Point3(10,10,3), 1);
+  auto sphere_after_left = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_transparent), Point3(10,6,3), 1);
+  auto sphere_before_right = std::make_shared<Sphere>(std::make_shared<Uniform_Texture>(caracteristics_transparent), Point3(6,10,3), 1);
+  scene.add_object({sphere, sphere_after_right, sphere_after_left, sphere_before_right});
+
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/refraction_skybox.ppm");
+}
+
+void spoon_refracted() {
+  Scene scene = Scene(create_standard_camera(), 5);
+  scene.msaa_samples = 1;
+  const std::string filename = "images/landscape.ppm";
+  Caracteristics caracteristics_image(Pixel(0, 255, 0), 0.5, 0, 1);
+  Caracteristics caracteristics_gray(Pixel(122, 122, 122), 0.8, 0, 0);
+  create_mesh_from_obj(scene, std::make_shared<Uniform_Texture>(caracteristics_gray), "images/geometry/skybox_paranoma.obj");
+  create_skybox_light(scene);
+
+  //create_mesh_from_obj(scene, std::make_shared<Uniform_Texture>(caracteristics_gray), "images/geometry/spoon.obj");
+
+  Caracteristics caracteristics_transparent(Pixel(122, 122, 122), 0, 0.8, 1, 1.33);
+  create_mesh_from_obj(scene, std::make_shared<Uniform_Texture>(caracteristics_transparent), "images/geometry/spoon_cube.obj");
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(9.4,8.44,3.43)), scene.camera.center), 5) << '\n';
+  std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, Point3(9.5,8.49,3.43)), scene.camera.center), 5) << '\n';
+  for (double i = 0; i < 2; i += 0.01) {
+    Point3 arrival(7 + 2 * i,7.24 + i, 3.43);
+    std::cout << arrival << " : ";
+    std::cout << scene.raycast(Rayon(Vector3(scene.camera.center, arrival), scene.camera.center), 5) << '\n';
+  }
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/spoon_refracted.ppm");
+}
+
+void monkey_skybox() {
+  Scene scene = Scene(create_standard_camera(), 5);
+  scene.msaa_samples = 4;
+  scene.use_vertex_normal = true;
+  Caracteristics caracteristics_gray(Pixel(139, 69, 19), 0.8, 0, 0);
+  Caracteristics caracteristics_image(Pixel(0, 255, 0), 0.5, 0, 1);
+  create_mesh_from_obj(scene, std::make_shared<Image_Texture>(caracteristics_image, "images/panoramic.ppm"), "images/geometry/skybox_paranoma.obj");
+  create_skybox_light(scene);
+
+  //create_mesh_from_obj(scene, std::make_shared<Uniform_Texture>(caracteristics_gray), "images/geometry/spoon.obj");
+
+  create_mesh_from_obj(scene, std::make_shared<Uniform_Texture>(caracteristics_gray), "images/geometry/monkey2.obj");
+  Image image = scene.raycasting();
+  image.save_as_ppm("images/monkey_skybox.ppm");
 }
 
 //TODO change the two planes in refraction test
 int main() {
   //nice_scene_different_views();
-  refraction_sphere_on_plane();
+  //refraction_sphere_on_plane();
   //displacement_texture();
   //displacement();
   //perlin_noise_2d();
@@ -581,12 +691,14 @@ int main() {
   //blob_test();
   //triangle_on_plane();
   //smooth_triangle_on_plane();
+  //simple_ray_casting();
   //simple_plane();
   //two_spheres_on_plane();
   //sphere_anti_aliased();
   //obj();
   //muntain_different_views();
   //muntain(create_standard_camera(), 99);
+  //circle_boat_views();
   Point3 spotted_point(0,0,0);
   Vector3 up(0,0,1);
   float circle_radius = 18;
@@ -598,6 +710,11 @@ int main() {
   Camera camera(center, spotted_point, up, alpha, beta, zmin);
   boat(camera, 99);
   //circle_boat_views();
+
+  //reflecting_sphere_in_skybox();
+  //refraction_sphere_in_skybox();
+  //monkey_skybox();
+  //spoon_refracted();
 }
 
 

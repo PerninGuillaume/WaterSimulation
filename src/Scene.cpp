@@ -77,7 +77,7 @@ Pixel Scene::diffuse_light(const Point3& intersection_point, const Caracteristic
     double point_to_light_norm = point_to_light_vector.norm();
     Vector3 point_to_light = point_to_light_vector.normalize();
     if (is_hidden(Rayon(point_to_light, intersection_point),  point_to_light_norm)) {continue;}
-    Vector3 normal = object->normal_at_point(intersection_point, u, v, true);
+    Vector3 normal = object->normal_at_point(intersection_point, Rayon(-point_to_light, light->origin), u, v, true);
 
     diffuse_intensity += (caracteristics.pixel * caracteristics.kd * light->get_intensity(intersection_point))
                          * normal.scalar_product(point_to_light, true);
@@ -93,7 +93,7 @@ Pixel Scene::specular_light(const Point3& intersection_point, const Vector3& inc
     double point_to_light_norm = point_to_light_vector.norm();
     Vector3 point_to_light = point_to_light_vector.normalize();
     if (is_hidden(Rayon(point_to_light, intersection_point),  point_to_light_norm)) {continue;}
-    Vector3 normal = object->normal_at_point(intersection_point, u, v, true);
+    Vector3 normal = object->normal_at_point(intersection_point, Rayon(-point_to_light, light->origin),  u, v, true);
     Vector3 reflected_vector = reflection_vector(incident_vector, normal);
 
     specular_intensity += caracteristics.ks
@@ -179,7 +179,7 @@ Pixel Scene::raycast(const Rayon& ray, unsigned int bounces) {
 
   //TODO see if this works : we take the surface normal instead of the vertex normal here to avoid issue
   //such as a reflection going behind an object because of smooth triangle normals that act as a sphere
-  Vector3 normal = intersecting_object->normal_at_point(intersection_point, u, v, use_vertex_normal);
+  Vector3 normal = intersecting_object->normal_at_point(intersection_point, ray, u, v, use_vertex_normal);
   Vector3 incident_vector = (Vector3(ray.origin, intersection_point)).normalize();
   Vector3 reflected_vector = reflection_vector(incident_vector, normal);
 

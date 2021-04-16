@@ -34,7 +34,10 @@ Image::Image(int width, int height)
   file.close();
 }
 
-unsigned char Image::compress_value(double max, double value) {
+unsigned char Image::compress_value(double max, double value) const {
+
+  //double tmp = std::pow(value, 1 / gamma);
+  //return (unsigned char)(tmp / (1 + tmp) * 255.0);
   return (unsigned char)(std::pow(value / max, 1/gamma) * 255.0);
 }
 
@@ -62,6 +65,7 @@ void Image::save_as_ppm(const std::string& filename) {
       unsigned char g = compress_value(max, pixel.y);
       unsigned char b = compress_value(max, pixel.z);
       file << r << g << b;
+      //std::cout << pixel.x << ' ' << pixel.y << ' ' << pixel.z << "(" << +r<< ' '  << +g<< ' '  << +b << ' ' << ")\n";
     }
     file.close();
 }

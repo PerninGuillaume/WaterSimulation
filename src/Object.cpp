@@ -70,9 +70,10 @@ std::optional<double> Sphere::is_intersecting(const Rayon& ray, double&, double&
     return std::min(t0, t1);
 }
 
-Vector3 Sphere::normal_at_point(const Point3& point, double, double, bool)
+Vector3 Sphere::normal_at_point(const Point3& point, const Rayon& ray, double, double, bool)
 {
-    return Vector3(point.x - origin.x, point.y - origin.y, point.z - origin.z).normalize();
+  //We don't do any black face culling check here as we suppose that we only in a sphere for transparent object
+  return Vector3(point.x - origin.x, point.y - origin.y, point.z - origin.z).normalize();
 }
 
 Caracteristics Sphere::texture_at_point(const Point3&, double, double) {
@@ -90,10 +91,10 @@ std::optional<double> Plane::is_intersecting(const Rayon& ray, double&, double&)
     return tmp / scalar;
 }
 
-Vector3 Plane::normal_at_point(const Point3&, double, double, bool) {
-  /*if (ray.direction.scalar_product(this->normal) > 0) {
+Vector3 Plane::normal_at_point(const Point3&, const Rayon& ray, double, double, bool) {
+  if (!black_face_culling && ray.direction.scalar_product(this->normal) > 0) {
     return -1.0 * this->normal;
-  }*/
+  }
   return this->normal;
 }
 
@@ -150,10 +151,10 @@ std::optional<double> Triangle::is_intersecting(const Rayon& ray) {
 }
  */
 
-Vector3 Triangle::normal_at_point(const Point3&, double, double, bool) {
-  /*if (ray.direction.scalar_product(this->normal) > 0) {
+Vector3 Triangle::normal_at_point(const Point3&, const Rayon& ray, double, double, bool) {
+  if (!black_face_culling && ray.direction.scalar_product(this->normal) > 0) {
     return -1.0 * this->normal;
-  }*/
+  }
   return this->normal;
 }
 
@@ -200,15 +201,16 @@ std::optional<double> SmoothTriangle::is_intersecting(const Rayon &ray, double &
 }
 
 //This function should be called only after is_intersecting has been called in order for u,v and w to be initialized
-Vector3 SmoothTriangle::normal_at_point(const Point3&, double u, double v, bool interpolate) {
+Vector3 SmoothTriangle::normal_at_point(const Point3&, const Rayon& ray, double u, double v, bool interpolate) {
   if (!interpolate)
     return normal;
   double w = 1.0 - u - v;
   Vector3 interpolatedVector = w * normA + u * normB + v * normC;
   interpolatedVector.normalize();
-  /*if (ray.direction.scalar_product(interpolatedVector) > 0) {
+
+  if (!black_face_culling && ray.direction.scalar_product(interpolatedVector) > 0) {
     return -1.0 * interpolatedVector;
-  }*/
+  }
   return interpolatedVector;
 }
 

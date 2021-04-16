@@ -12,11 +12,12 @@ public:
   Object(std::shared_ptr<Texture_Material> texture_material);
 
     virtual std::optional<double> is_intersecting(const Rayon& ray, double &u, double &v) = 0;
-    virtual Vector3 normal_at_point(const Point3& point, double u, double v, bool interpolate) = 0;
+    virtual Vector3 normal_at_point(const Point3& point, const Rayon& ray, double u, double v, bool interpolate) = 0;
     virtual Caracteristics texture_at_point(const Point3& point, double u, double v) = 0;
 
   std::shared_ptr<Texture_Material> texture_material;
   double epsilon = 0.000001;
+  bool black_face_culling = false;
 };
 
 class Sphere : public Object
@@ -26,7 +27,7 @@ public:
 
     std::optional<double> is_intersecting(const Rayon& ray, double &u, double &v) override;
 
-    Vector3 normal_at_point(const Point3& point, double u, double v, bool interpolate) override;
+    Vector3 normal_at_point(const Point3& point, const Rayon& ray, double u, double v, bool interpolate) override;
 
     Caracteristics texture_at_point(const Point3& point, double u, double v) override;
 
@@ -39,7 +40,7 @@ public:
     Plane(std::shared_ptr<Texture_Material> texture_material, Point3 point, Vector3 normal);
   std::optional<double> is_intersecting(const Rayon& ray, double &u, double &v) override;
 
-  Vector3 normal_at_point(const Point3& point, double u, double v, bool interpolate) override;
+  Vector3 normal_at_point(const Point3& point, const Rayon& ray, double u, double v, bool interpolate) override;
 
   Caracteristics texture_at_point(const Point3& point, double u, double v) override;
 
@@ -53,7 +54,7 @@ public:
 
   std::optional<double> is_intersecting(const Rayon& ray, double &u, double &v) override;
 
-  Vector3 normal_at_point(const Point3& point, double u, double v, bool interpolate) override;
+  Vector3 normal_at_point(const Point3& point, const Rayon& ray, double u, double v, bool interpolate) override;
 
   Caracteristics texture_at_point(const Point3& point, double u, double v) override;
 
@@ -73,7 +74,7 @@ public:
 
   std::optional<double> is_intersecting(const Rayon& ray, double &u, double &v) override;
 
-  Vector3 normal_at_point(const Point3& point, double u, double v, bool interpolate) override;
+  Vector3 normal_at_point(const Point3& point, const Rayon& ray, double u, double v, bool interpolate) override;
 
   Caracteristics texture_at_point(const Point3& point, double u, double v) override;
 
