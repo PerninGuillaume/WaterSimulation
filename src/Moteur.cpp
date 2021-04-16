@@ -527,7 +527,7 @@ void create_boat_moving_water_in_scene(Scene& scene, float x_offset) {
   std::vector<Vector3> normals = {{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1}};
   std::vector<Point3> textureCoordinates = {{0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}};
   //triangleMesh(scene, texture, faceIndex, vertexIndices, points, normals, textureCoordinates);
-  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 50, 50, texture, false, true, 0.1f);
+  rectangle_displaced_by_noise(scene, points[0], points[1], points[2], points[3], 20, 20, texture, false, true, 0.2f);
 }
 
 void create_sink_boat_water_in_scene(Scene& scene, float water_height) {
@@ -635,8 +635,8 @@ void boat_moving_water_views() {
   float alpha = 60.64; //For a ratio of 16/9
   float beta = 45.0;
   float zmin = 1.0;
-  int image_num = 1;
-  for (float water_offset = -1; water_offset < 1; water_offset+=0.05) {
+  int image_num = 6;
+  for (float water_offset = -0.4; water_offset < 1; water_offset+=0.1) {
     Camera camera(center, spotted_point, up, alpha, beta, zmin);
     boat(camera, image_num, 0.5, false, water_offset);
     image_num++;
